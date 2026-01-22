@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Token Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .service-scope-group {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-add {
+            background-color: #007bff;
+            padding: 8px 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .btn-add:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-remove {
+            background-color: #dc3545;
+            padding: 5px 15px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .btn-remove:hover {
+            background-color: #c82333;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <h2>Demande de Token API</h2>
+
+        <div th:if="${message}" 
+             th:class="'alert alert-' + ${message.type}"
+             id="alertMessage">
+            <span class="alert-icon">
+                <span th:if="${message.type == 'success'}">✓</span>
+                <span th:if="${message.type == 'error'}">✗</span>
+                <span th:if="${message.type == 'warning'}">⚠</span>
+                <span th:if="${message.type == 'info'}">ℹ</span>
+            </span>
+            <div class="alert-content">
+                <strong th:if="${message.type == 'success'}">Succès !</strong>
+                <strong th:if="${message.type == 'error'}">Erreur !</strong>
+                <strong th:if="${message.type == 'warning'}">Attention !</strong>
+                <strong th:if="${message.type == 'info'}">Information</strong>
+                <p th:text="${message.content}" style="margin: 5px 0 0 0;"></p>
+                
+                <!--  Afficher le token si succès 
+                <div th:if="${message.type == 'success' and token}" 
+                     class="token-display">
+                    <strong>Votre token :</strong><br/>
+                    <span th:text="${token}"></span>
+                </div>-->
+            </div>
+            <button class="alert-close" onclick="closeAlert()">&times;</button>
+        </div>
+
+        <form th:action="@{/request}" th:object="${requestTokenDto}" method="post">
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <!-- ID (hidden) -->
+            <input type="hidden" th:field="*{id}" />
+
+            <!-- Client Name -->
+            <div class="form-group">
+                <label for="clientName">Nom du Client *</label>
+                <input type="text" id="clientName" th:field="*{clientName}" placeholder="Entrez le nom du client"
+                    required />
+                <span class="error" th:if="${#fields.hasErrors('clientName')}" th:errors="*{clientName}"></span>
+            </div>
+
+            <!-- Client Secret 
+            <div class="form-group">
+                <label for="clientSecret">Client Secret *</label>
+                <input type="password" id="clientSecret" th:field="*{clientSecret}"
+                    placeholder="Entrez le secret client" required />
+                <span class="error" th:if="${#fields.hasErrors('clientSecret')}" th:errors="*{clientSecret}"></span>
+            </div>-->
+
+            <!-- Client Secret -->
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" th:field="*{email}"
+                    placeholder="Entrez votre email" required />
+                <span class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+            </div>
+
+            <!-- Services and Scopes -->
+            <div class="form-group">
+                <label>Services et Scopes *</label>
+                <div id="servicesContainer">
+                <!-- Service/Scope dynamique -->
+                <div class="service-scope-group" 
+                         th:each="entry, iterStat : ${requestTokenDto.serviceNames}">
+                        
+                        <div>
+                            <label th:for="'module' + ${iterStat.index}">Module</label>
+                            <select th:id="'module' + ${iterStat.index}"
+                                    th:name="'module_' + ${iterStat.index}"
+                                    required>
+                                <option value="">-- Sélectionnez --</option>
+                                <option th:each="module : ${T(com.education_service.apiKeygateway.enums.Module).values()}"
+                                        th:value="${module.name()}"
+                                        th:text="${module.value}"
+                                        th:selected="${module.name() == entry.key.name()}">
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label th:for="'scope' + ${iterStat.index}">Scope</label>
+                            <select th:id="'scope' + ${iterStat.index}"
+                                    th:name="'scope_' + ${iterStat.index}"
+                                    required>
+                                <option value="">-- Sélectionnez --</option>
+                                <option th:each="scope : ${T(com.education_service.apiKeygateway.enums.Scope).values()}"
+                                        th:value="${scope.name()}"
+                                        th:text="${scope.name()}"
+                                        th:selected="${scope.name() == entry.value.name()}">
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <button type="button" class="btn-remove" onclick="removeService(this)">
+                            ✗
+                        </button>
+                    </div>
+
+                <button type="button" class="btn btn-add" onclick="addService()">
+                    + Ajouter un service
+                </button>
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-group" style="margin-top: 30px;">
+                <button type="submit" class="btn">Soumettre</button>
+                <button type="reset" class="btn btn-secondary">Réinitialiser</button>
+            </div>
+        </form>
+    </div>
+
+    
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+    
+        let serviceCounter = /*[[${requestTokenDto.serviceNames != null ? requestTokenDto.serviceNames.size() : 0}]]*/ 0;
+        
+        // ✅ Récupérer les Modules
+        const modules = [];
+        /*[# th:each="module : ${T(com.education_service.apiKeygateway.enums.Module).values()}"]*/
+            modules.push({
+                name: /*[[${module.name()}]]*/ '',
+                value: /*[[${module.value}]]*/ ''
+            });
+        /*[/]*/
+        
+        // ✅ Récupérer les Scopes
+        const scopes = [];
+        /*[# th:each="scope : ${T(com.education_service.apiKeygateway.enums.Scope).values()}"]*/
+            scopes.push(/*[[${scope.name()}]]*/ '');
+        /*[/]*/
+        
+        function addService() {
+            const container = document.getElementById('servicesContainer');
+            const serviceDiv = document.createElement('div');
+            serviceDiv.className = 'service-scope-group';
+            
+            // ✅ Options pour Module
+            let moduleOptions = '<option value="">-- Sélectionnez --</option>';
+            modules.forEach(module => {
+                moduleOptions += `<option value="${module.name}">${module.value}</option>`;
+            });
+            
+            // ✅ Options pour Scope
+            let scopeOptions = '<option value="">-- Sélectionnez --</option>';
+            scopes.forEach(scope => {
+                scopeOptions += `<option value="${scope}">${scope}</option>`;
+            });
+            
+            serviceDiv.innerHTML = `
+                <div>
+                    <label for="module${serviceCounter}">Module</label>
+                    <select id="module${serviceCounter}"
+                            name="module_${serviceCounter}"
+                            required>
+                        ${moduleOptions}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="scope${serviceCounter}">Scope</label>
+                    <select id="scope${serviceCounter}"
+                            name="scope_${serviceCounter}"
+                            required>
+                        ${scopeOptions}
+                    </select>
+                </div>
+                
+                <button type="button" class="btn-remove" onclick="removeService(this)">
+                    ✗
+                </button>
+            `;
+            
+            container.appendChild(serviceDiv);
+            serviceCounter++;
+        }
+        
+        function removeService(button) {
+            button.parentElement.remove();
+        }
+
+         function closeAlert() {
+            const alert = document.getElementById('alertMessage');
+            if (alert) {
+                alert.style.animation = 'slideUp 0.3s ease-out';
+                setTimeout(() => alert.remove(), 300);
+            }
+        }
+        
+        // Auto-fermeture après 5 secondes pour les messages de succès
+        window.onload = function() {
+            const alert = document.getElementById('alertMessage');
+            if (alert && alert.classList.contains('alert-success')) {
+                setTimeout(() => closeAlert(), 5000);
+            }
+        };
+
+        
+    /*]]>*/
+
+       
+    </script>
+</body>
+
+</html>

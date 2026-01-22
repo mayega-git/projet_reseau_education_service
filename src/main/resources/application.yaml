@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: apiKeygateway
+
+  app:
+    secret-key-jwt: 942faeb8l7276e4b49tb248sd291a1c69caa
+    expiration-time: 3600
+  api-docs:
+    enabled: true
+
+  r2dbc:
+     
+    url: r2dbc:postgresql://localhost:5433/education-service 
+    username: postgres
+    password: adminuser
+    properties:
+      schema: api_key_gateway
+
+  liquibase:
+    url: jdbc:postgresql://localhost:5433/education-service
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    user: postgres
+    password: adminuser
+    enabled: true
+  
+  security:
+    user:
+      name: apiKeyUser
+      password: password123
+
+server:
+    port: 8081
+
+
+logging:
+  level:
+    org:
+      springdoc: DEBUG
+      springframework:
+        security: TRACE
+        thymeleaf: DEBUG
+        web: DEBUG
+        authorization: TRACE
+        r2dbc: DEBUG
+        postgresql: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG
+    io.r2dbc.postgresql.PARAM: DEBUG
+    io.r2dbc.postgresql.ERROR: DEBUG
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Client-Id
