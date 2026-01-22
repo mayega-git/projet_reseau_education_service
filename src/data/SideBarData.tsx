@@ -196,7 +196,14 @@ export const SideBarData = [
   {
     title: 'Manage NewsLetter',
     url: `/u/manage/newsletter`,
-    role: [AppRoles.SUPER_ADMIN,AppRoles.AUTHOR],
+    role: [AppRoles.SUPER_ADMIN],
+    icon: Mail,
+    subnav: [],
+  },
+  {
+    title: 'NewsLetter',
+    url: `/u/newsletter`,
+    role: [AppRoles.AUTHOR],
     icon: Mail,
     subnav: [],
   },
