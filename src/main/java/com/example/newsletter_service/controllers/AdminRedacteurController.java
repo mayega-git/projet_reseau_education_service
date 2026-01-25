@@ -18,7 +18,7 @@ import java.util.UUID;
  * IMPORTANT: Ces endpoints doivent être protégés par Spring Security (ROLE_ADMIN)
  */
 @RestController
-@RequestMapping("/api/admin/redacteurs")
+@RequestMapping("/newsletter/api/admin/redacteurs")
 @Slf4j
 @RequiredArgsConstructor
 public class AdminRedacteurController {

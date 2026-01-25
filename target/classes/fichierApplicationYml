@@ -7,8 +7,8 @@ spring:
   
   r2dbc:
     url: r2dbc:postgresql://localhost:5433/newsletter
-    username: postgres
-    password: adminuser
+    username: USERNAME
+    password: PASSWORD
   
   # Configuration Liquibase (gestion des migrations de base de données)
   liquibase:

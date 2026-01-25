@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/redacteurs")
+@RequestMapping("/newsletter/api/redacteurs")
 @Slf4j
 @RequiredArgsConstructor
 public class RedacteurController {

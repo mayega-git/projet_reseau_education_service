@@ -15,7 +15,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/api/lecteurs")
+@RequestMapping("/newsletter/api/lecteurs")
 @RequiredArgsConstructor
 public class LecteurControlleur {
     

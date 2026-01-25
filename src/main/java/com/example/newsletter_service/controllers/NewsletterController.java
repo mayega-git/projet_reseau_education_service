@@ -22,7 +22,7 @@ import java.util.UUID;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/newsletters")
+@RequestMapping("/newsletter/api/newsletters")
 @RequiredArgsConstructor
 public class NewsletterController {
 
