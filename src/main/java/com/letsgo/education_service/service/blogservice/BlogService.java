@@ -9,6 +9,7 @@ import com.letsgo.education_service.dto.apiDto.fileStorageServiceDto.FileDtoDown
 import com.letsgo.education_service.enums.ContentType;
 import com.letsgo.education_service.enums.Domain;
 import com.letsgo.education_service.exception.BlogNotFoundException;
+import com.letsgo.education_service.exception.PodcastNotFoundException;
 import com.letsgo.education_service.models.Blog_entity;
 import com.letsgo.education_service.repository.BlogRepository;
 import com.letsgo.education_service.service.apiService.FileStorageService;
@@ -83,14 +84,12 @@ public class BlogService {
             blog.setDescription(createDTO.getDescription());
             blog.setAuthorId(createDTO.getAuthorId());
             blog.setReadingTime(createDTO.getReadingTime());
-            blog.setDomain(Domain.valueOf(createDTO.getDomain()));
+            blog.setDomain(Domain.valueOf(createDTO.getDomain().toUpperCase()));
             blog.setContentType(ContentType.BLOG);
             blog.setStatus(ContentStatus.DRAFT);
             //System.out.println("================id plateforme=============" + createDTO.getPlateformeId());
-            blog.setPlateformeId(createDTO.getPlateformeId());
-            
-            //System.out.println("INITIALISATION DE BASE DES PARAMETRES");
-            
+            //blog.setPlateformeId(createDTO.getPlateformeId());
+
             // Upload des fichiers
             Mono<MediaUploadResponse> coverMono = (coverFile != null)
                 ? mediaStorageService.uploadFile(coverFile,location)
@@ -223,7 +222,7 @@ public class BlogService {
                 blog.setAuthorId(updateDTO.getAuthorId());
                 blog.setContent(updateDTO.getContent());
                 blog.setReadingTime(updateDTO.getReadingTime());
-                blog.setDomain(Domain.valueOf(updateDTO.getDomain()));
+                blog.setDomain(Domain.valueOf(updateDTO.getDomain().toUpperCase()));
                 blog.setUpdatedAt(LocalDateTime.now());
 
                 return blogRepository.save(blog);
@@ -302,6 +301,48 @@ public class BlogService {
                             .body(stream);
                 })
                 .doOnError(e -> log.error(" Erreur cover blog {}: {}", idBlog, e.getMessage()));
+        }
+
+        public Mono<ResponseEntity<Flux<DataBuffer>>> getAudioPodcast(UUID idBlog) {
+
+            return blogRepository.findById(idBlog)
+                .switchIfEmpty(Mono.error(new PodcastNotFoundException("Podcast introuvable: " + idBlog)))
+                .flatMap(podcast -> {
+                    if (podcast.getId_ressource() == null) {
+                        return Mono.error(new PodcastNotFoundException("Aucune ressource pour ce podcast"));
+                    }
+                    return ressourceService.getRessourceById(podcast.getId_ressource());
+                })
+                .map(ressource -> {
+                    if (ressource.getAudioId() == null) {
+                        throw new PodcastNotFoundException("Aucune audio id trouvée");
+                    }
+                    
+                    // On prépare le flux de données
+                    Flux<DataBuffer> stream = mediaStorageService.getFile(ressource.getAudioId());
+                    
+                    // On détermine le type MIME (PNG par défaut si null)
+                    MediaType contentType = ressource.getMimeType() != null ? MediaType.parseMediaType(ressource.getMimeType())  : MediaType.IMAGE_PNG;
+
+                    return ResponseEntity.ok()
+                            .contentType(contentType)
+                            
+                            .body(stream);
+                })
+                .doOnError(e -> log.error(" Erreur cover podcast {}: {}", idBlog, e.getMessage()));
+        }
+
+        public Mono<Blog_entity> updateStatusBlog(UUID id ,String status) {
+            return blogRepository.findById(id)
+            .flatMap(blog -> {
+                if (blog.getStatus() != ContentStatus.ARCHIVED) {
+                    blog.setStatus(ContentStatus.valueOf(status.toUpperCase()));
+                    blog.setUpdatedAt(LocalDateTime.now());
+                    return blogRepository.save(blog);
+                } else {
+                    return Mono.just(new Blog_entity());
+                }
+            });
         }     
 
 

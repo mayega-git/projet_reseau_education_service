@@ -40,14 +40,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.time.Instant;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
  
 @Service
@@ -93,17 +88,27 @@ public class PodcastService {
         //podcast.setOrganisationId(String.valueOf(createDTO.getOrganisationId()));
         podcast.setContentType(ContentType.PODCAST);
         podcast.setStatus(ContentStatus.DRAFT);
-
+        podcast.setDomain(Domain.valueOf(createDTO.getDomain().toUpperCase()));
         System.out.println("INITIALISATION DE BASE DES PARAMETRES");
         
         // Upload des fichiers
-        Mono<MediaUploadResponse> coverMono = (coverFile != null) 
-            ? mediaStorageService.uploadFile(coverFile,location)
-            : Mono.just(new MediaUploadResponse());
-        
-        Mono<MediaUploadResponse> audioMono = (audioFile != null)
-            ? mediaStorageService.uploadFile(audioFile,location)
-            : Mono.just(new MediaUploadResponse());
+            Mono<MediaUploadResponse> coverMono = (coverFile != null)
+                ? mediaStorageService.uploadFile(coverFile,location)
+                .defaultIfEmpty(new MediaUploadResponse())
+                .onErrorResume(error -> {
+                        System.err.println("ERREUR upload cover: " + error.getMessage());
+                        return Mono.just(new MediaUploadResponse()); 
+                    })
+                : Mono.just(new MediaUploadResponse());
+
+            Mono<MediaUploadResponse> audioMono = (audioFile != null)
+                ? mediaStorageService.uploadFile(audioFile,location)
+                .defaultIfEmpty(new MediaUploadResponse())
+                .onErrorResume(error -> {
+                    System.err.println("ERREUR upload audio: " + error.getMessage());
+                    return Mono.just(new MediaUploadResponse()); // Continuer avec une réponse vide
+                })
+                : Mono.just(new MediaUploadResponse());
         
         //sauvegarde
         return Mono.zip(audioMono, coverMono)
@@ -189,9 +194,12 @@ public class PodcastService {
 
 
     public Mono<Podcast_entity> updatePodcast(String id, PodcastCreateDTO updateDTO) {
+        System.out.println("UPDATE PODCAST SERVICE HIT 1");
+        
         return podcastRepository.findById(UUID.fromString(id))
             .switchIfEmpty(Mono.error(new NoSuchElementException("Blog avec l'ID " + id + " non trouvé.")))
             .flatMap(podcast -> {
+                System.out.println("Status du podcast : " + podcast.getStatus());
                 if (podcast.getStatus() != ContentStatus.DRAFT) {
                     return Mono.error(new IllegalStateException("Seuls les blogs en statut DRAFT peuvent être mis à jour."));
                 }
@@ -200,7 +208,7 @@ public class PodcastService {
                 podcast.setDescription(updateDTO.getDescription());
                 podcast.setAuthorId(updateDTO.getAuthorId());
                 podcast.setUpdatedAt(LocalDateTime.now());
-
+                System.out.println("UPDATE PODCAST SERVICE HIT 2");
                 return podcastRepository.save(podcast);
             }); 
     }
@@ -225,6 +233,8 @@ public class PodcastService {
             return educationCategoryService.getCategoriesByEducation(id);
     }
 
+    
+
     public Mono<ResponseEntity<Flux<DataBuffer>>> getCoverImage(UUID idPodcast) {
 
             return podcastRepository.findById(idPodcast)
@@ -244,7 +254,7 @@ public class PodcastService {
                     Flux<DataBuffer> stream = mediaStorageService.getFile(ressource.getCoverId());
                     
                     // On détermine le type MIME (PNG par défaut si null)
-                    MediaType contentType =  MediaType.IMAGE_PNG;
+                    MediaType contentType =  ressource.getMimeType() != null ? MediaType.parseMediaType(ressource.getMimeType())  : MediaType.IMAGE_PNG;;
 
                     return ResponseEntity.ok()
                             .contentType(contentType)
@@ -252,6 +262,39 @@ public class PodcastService {
                 })
                 .doOnError(e -> log.error(" Erreur cover podcast {}: {}", idPodcast, e.getMessage()));
         }
+
+        public Mono<ResponseEntity<Flux<DataBuffer>>> getAudioPodcast(UUID idPodcast) {
+
+            return podcastRepository.findById(idPodcast)
+                .switchIfEmpty(Mono.error(new PodcastNotFoundException("Podcast introuvable: " + idPodcast)))
+                .flatMap(podcast -> {
+                    if (podcast.getId_ressource() == null) {
+                        return Mono.error(new PodcastNotFoundException("Aucune ressource pour ce podcast"));
+                    }
+                    return ressourceService.getRessourceById(podcast.getId_ressource());
+                })
+                .map(ressource -> {
+                    if (ressource.getAudioId() == null) {
+                        throw new PodcastNotFoundException("Aucune audio id trouvée");
+                    }
+                    
+                    // On prépare le flux de données
+                    Flux<DataBuffer> stream = mediaStorageService.getFile(ressource.getAudioId());
+                    
+                    // On détermine le type MIME (PNG par défaut si null)
+                    MediaType contentType = ressource.getMimeType() != null ? MediaType.parseMediaType(ressource.getMimeType())  : MediaType.IMAGE_PNG;
+
+                    return ResponseEntity.ok()
+                            .contentType(contentType)
+                            
+                            .body(stream);
+                })
+                .doOnError(e -> log.error(" Erreur cover podcast {}: {}", idPodcast, e.getMessage()));
+        }
+
+    public Flux<Podcast_entity> getAllPodcast() {
+        return podcastRepository.findAll();
+    }
 
 
 

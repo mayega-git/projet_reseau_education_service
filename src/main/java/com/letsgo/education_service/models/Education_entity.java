@@ -85,9 +85,9 @@ public abstract class Education_entity {
     @Schema(description = "Domain", example = "TAXI, AGRICULTURE")
     private Domain domain;
 
-    @Column("id_plateforme")
+   /* @Column("id_plateforme")
     @Schema(description = "Plateforme" , example = "123d4567-e89b-12d3-a456-426614174000")
-    private UUID plateformeId;
+    private UUID plateformeId;*/
 
     @Column("id_ressource")
     @Schema(description = "Ressource ID" , example = "123d4567-e89b-12d3-a456-426614174000")

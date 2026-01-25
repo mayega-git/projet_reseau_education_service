@@ -8,7 +8,8 @@ public enum Domain {
     TECHNOLOGY("TECHNOLOGY"),
     SCIENCE("SCIENCE"),
     ASTRONOMY("ASTRONOMY"),
-    INFORMATIQUE("INFORMATIQUE");
+    INFORMATIQUE("INFORMATIQUE"),
+    LITTERATURE("LITTERATURE");
 
     private  final String  value;
 

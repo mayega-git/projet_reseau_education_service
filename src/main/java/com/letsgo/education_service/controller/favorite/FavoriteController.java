@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/favorites")
+@RequestMapping("/education/api/favorites")
 public class FavoriteController {
 
     @Autowired

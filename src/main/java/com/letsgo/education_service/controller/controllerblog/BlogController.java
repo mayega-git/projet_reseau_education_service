@@ -10,6 +10,7 @@ import com.letsgo.education_service.service.blogservice.BlogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -35,7 +36,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/blogs")
+@RequestMapping("/education/api/blogs")
 public class BlogController {
 
     private final BlogService blogService;
@@ -69,25 +70,26 @@ public class BlogController {
         @ApiResponse(responseCode = "500", description = "Erreur serveur")
     })
     public Mono<ResponseEntity<Blog_entity>> createBlog(
-        @RequestBody BlogCreateDTO createBlogDto,
+        @RequestPart("data") String createBlogDto,
         @RequestPart(value = "audio", required = false) Mono<FilePart> audioFile,
         @RequestPart(value = "cover", required = false) Mono<FilePart> coverFile
     ) {
         System.out.println("=== CRÉATION BLOG ===");
         System.out.println("JSON reçu : " + createBlogDto);
-        System.out.println("Audio présent : " + (audioFile != null));
-        System.out.println("Cover présent : " + (coverFile != null));
+        System.out.println("Audio présent : " + audioFile.hasElement());
+        System.out.println("Cover présent : " + coverFile.hasElement());
         
-        return Mono.just(createBlogDto) 
-            /*try {
+        return Mono.fromCallable(() -> {
+            try {
                 
-                BlogCreateDTO createDTO = objectMapper.readValue(createDTOJson, BlogCreateDTO.class);
+                BlogCreateDTO createDTO = objectMapper.readValue(createBlogDto, BlogCreateDTO.class);
                 System.out.println("DTO parsé : " + createDTO.getTitle());
                 return createDTO;
             } catch (JsonProcessingException e) {
                 System.err.println("Erreur parsing JSON : " + e.getMessage());
                 throw new IllegalArgumentException("JSON invalide : " + e.getMessage());
-            }*/
+            }
+        })
         
         .flatMap(createDTO -> {
             System.out.println("Appel du service...");
@@ -121,23 +123,7 @@ public class BlogController {
 
    
 
-  /*  @GetMapping(value = "/{idBlog}/audio", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    @Operation(summary = "Diffuser l'audio d'un blog")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Streaming de l'audio réussi"),
-        @ApiResponse(responseCode = "404", description = "Blog ou fichier audio non trouvé"),
-        @ApiResponse(responseCode = "500", description = "Erreur interne du serveur")
-    })
-     public Mono<ResponseEntity<Resource>> getBlogAudio(@PathVariable UUID idBlog) {
-            System.out.println("HELLO");
-            return blogService.getAudioBlog(idBlog)
-            .map(file -> ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getContentType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-                .body(file.getResource())
-            );
-
-     }*/
+  
 
     
     @GetMapping("/{id}")
@@ -152,23 +138,6 @@ public class BlogController {
             .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-   /*@GetMapping("/filter")
-    @Operation(summary = "Obtenir tous les blogs avec des paramètres optionnels")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Succès"),
-            @ApiResponse(responseCode = "404", description = "Id non trouvé")
-    })
-    public Flux<?> getAllBlogs(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String authorId,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String domain,
-            @RequestParam(required = false) List<String> categories,
-            @RequestParam(required = false) List<String> tags,
-            @RequestParam(required = false) String organisationId ) {
-
-            return blogService.getBlogByFilters(authorId, status, domain, categories, tags, organisationId, title);
-    }  */
 
     @GetMapping("/published")
     @Operation(summary = "Obtenir tous les blogs avec des paramètres optionnels")
@@ -186,15 +155,15 @@ public class BlogController {
 
 
     @GetMapping
-    @Operation(summary = "Obtenir tous les blogs avec des paramètres optionnels")
+    @Operation(summary = "Obtenir tous les blogs ")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Succès"),
             @ApiResponse(responseCode = "404", description = "Id non trouvé")
     })
-    public Flux<?> getAllBlogs() {
+    public Flux<Blog_entity> getAllBlogs() {
 
             return blogService.getAllBlog();
-    }   //✅
+    }
  
     @PatchMapping("/{id}/publish")
     @Operation(summary = "Publier un blog en utilisant son Id")
@@ -208,7 +177,7 @@ public class BlogController {
             .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    @PutMapping(value="/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+    @PutMapping(value="/{id}",consumes = MediaType.APPLICATION_JSON_VALUE,
     produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modifier un blog en utilisant l'Id du blog concerné")
     @ApiResponses(value = {
@@ -217,16 +186,9 @@ public class BlogController {
     })
     public Mono<ResponseEntity<Blog_entity>> updateBlog(
         @PathVariable String id,
-        @RequestPart("data") String updateDTO) {
+        @Valid @RequestBody BlogCreateDTO updateDTO) {
 
-            return Mono.fromCallable(() -> {
-            try {
-                return objectMapper.readValue(updateDTO, BlogCreateDTO.class);
-            } catch (JsonProcessingException e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Format JSON invalide");
-            }
-        })
-        .flatMap(dto -> blogService.updateBlog(id, dto))
+            return blogService.updateBlog(id, updateDTO)
         .map(ResponseEntity::ok)
         .onErrorResume(NoSuchElementException.class, e -> Mono.just(ResponseEntity.notFound().build()))
         .onErrorResume(ResponseStatusException.class, e -> Mono.error(e)) 
@@ -235,8 +197,46 @@ public class BlogController {
 
     }
 
+
+
+    @GetMapping("/{idBlog}/coverblog")
+    public Mono<ResponseEntity<Flux<DataBuffer>>> cover(@PathVariable UUID idBlog) {
+        System.out.println("=====BLOG SERVICE - GET COVER IMAGE ========");
+
+        return blogService.getCoverImage(idBlog)
+            .map(file -> ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.getHeaders().getContentType().toString()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .body(file.getBody())
+            );
+    }
+
+    @GetMapping("/{idBlog}/blogpodcast")
+    public Mono<ResponseEntity<Flux<DataBuffer>>> audio(@PathVariable UUID idPodcast) {
+        System.out.println("=====PODCAST SERVICE - GET AUDIO IMAGE =======");
+
+        return blogService.getAudioPodcast(idPodcast)
+            .map(file -> ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.getHeaders().getContentType().toString()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .body(file.getBody())
+            );
+    }
+
+    @GetMapping(value = "/{idblogs}/tags",produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<List<String>> getTagsByBlogs(@PathVariable String idblogs) {
+        return 
+            blogService.getTagsByBlogs(UUID.fromString(idblogs)).collectList();
+    }
+    
+    @GetMapping(value = "/{idblogs}/categories",produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<List<String>> getCategoriesByBlogs(@PathVariable String idblogs) {
+        return 
+            blogService.getTagsByBlogs(UUID.fromString(idblogs)).collectList();
+    }
+
  
-    /*@PatchMapping("/{id}/archive")
+    @PatchMapping("/{id}/archive")
     @Operation(summary = "Supprimer un blog par son Id (l'action de suppression est traitée comme une archive)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Blog supprimé avec succès"),
@@ -244,12 +244,12 @@ public class BlogController {
             @ApiResponse(responseCode = "400", description = "Le blog est déjà supprimé")
     })
     public Mono<ResponseEntity<Void>> deleteBlog(@PathVariable String id) {
-        return blogService.deleteBlog(UUID.fromString(id))
+        return blogService.archiveBlog(id)
             .map(isArchived -> isArchived
                 ? ResponseEntity.ok().<Void>build()
                 : ResponseEntity.status(HttpStatus.BAD_REQUEST).<Void>build())
             .defaultIfEmpty(ResponseEntity.notFound().build());
-    }*/
+    }
 
     /*@PutMapping("/{id}/audio")
     @Operation(summary = "Mettre à jour l'audio du blog ou ajouter un audio au blog")
@@ -300,31 +300,44 @@ public class BlogController {
                 });
     }*/
 
-    
 
-    @GetMapping("/{idBlog}/coverblog")
-    public Mono<ResponseEntity<Flux<DataBuffer>>> cover(@PathVariable UUID idBlog) {
-        System.out.println("=====BLOG SERVICE - GET COVER IMAGE ========");
+   /*@GetMapping("/filter")
+    @Operation(summary = "Obtenir tous les blogs avec des paramètres optionnels")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Succès"),
+            @ApiResponse(responseCode = "404", description = "Id non trouvé")
+    })
+    public Flux<?> getAllBlogs(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String authorId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String domain,
+            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = false) String organisationId ) {
 
-        return blogService.getCoverImage(idBlog)
+            return blogService.getBlogByFilters(authorId, status, domain, categories, tags, organisationId, title);
+    }  */
+
+            /*  @GetMapping(value = "/{idBlog}/audio", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @Operation(summary = "Diffuser l'audio d'un blog")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Streaming de l'audio réussi"),
+        @ApiResponse(responseCode = "404", description = "Blog ou fichier audio non trouvé"),
+        @ApiResponse(responseCode = "500", description = "Erreur interne du serveur")
+    })
+     public Mono<ResponseEntity<Resource>> getBlogAudio(@PathVariable UUID idBlog) {
+            System.out.println("HELLO");
+            return blogService.getAudioBlog(idBlog)
             .map(file -> ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getHeaders().getContentType().toString()))
+                .contentType(MediaType.parseMediaType(file.getContentType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-                .body(file.getBody())
+                .body(file.getResource())
             );
-    }
 
-    @GetMapping(value = "/{idblogs}/tags",produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<List<String>> getTagsByBlogs(@PathVariable String idblogs) {
-        return 
-            blogService.getTagsByBlogs(UUID.fromString(idblogs)).collectList();
-    }
+     }*/
+
     
-    @GetMapping(value = "/{idblogs}/categories",produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<List<String>> getCategoriesByBlogs(@PathVariable String idblogs) {
-        return 
-            blogService.getTagsByBlogs(UUID.fromString(idblogs)).collectList();
-    }
 
 
 

@@ -43,11 +43,21 @@ spring:
 
   logging:
     level:
-      org.springframework.web.reactive.function.server: DEBUG
-      org.springframework.web.reactive.function.client: DEBUG
-      org.springframework.http.codec.multipart: DEBUG
-      reactor.netty.http.client.HttpClient: DEBUG
-      com.fasterxml.jackson: DEBUG
+      org.springframework:
+        http.codec.json: DEBUG
+        web.reactive.result.method.annotation: DEBUG
+        web.reactive.function.server: DEBUG
+        web.reactive.function.client: DEBUG
+        http.codec.multipart: DEBUG
+        web: DEBUG
+        r2dbc: DEBUG
+        reactor.netty.http.client.HttpClient: DEBUG
+        com.fasterxml.jackson: DEBUG
+      
+      io.r2dbc.postgresql:
+        QUERY: DEBUG
+        PARAM: DEBUG
+        ERROR: DEBUG
 
 server:
   port: 8081

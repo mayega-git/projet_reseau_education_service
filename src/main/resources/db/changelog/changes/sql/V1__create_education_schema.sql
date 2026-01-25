@@ -5,14 +5,15 @@
 
 -- Suppression des tables si elles existent (ordre inverse des dépendances)
 
-DROP TABLE IF EXISTS favorites CASCADE;
-DROP TABLE IF EXISTS blog_entity CASCADE;
-DROP TABLE IF EXISTS podcast_entity CASCADE;
-DROP TABLE IF EXISTS tag_entity CASCADE;
-DROP TABLE IF EXISTS category_entity CASCADE;
+-- DROP TABLE IF EXISTS favorites CASCADE;
+-- DROP TABLE IF EXISTS blog_entity CASCADE;
+-- DROP TABLE IF EXISTS podcast_entity CASCADE;
+-- DROP TABLE IF EXISTS tag_entity CASCADE;
+-- DROP TABLE IF EXISTS category_entity CASCADE;
 
 
-
+--Creation schema
+-- CREATE SCHEMA IF NOT EXISTS education;
 
 -- ============================================
 -- TABLE: plateforme_entity
@@ -22,7 +23,8 @@ DROP TABLE IF EXISTS category_entity CASCADE;
 CREATE TABLE plateforme_entity (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(500)
+    description VARCHAR(255),
+    client_id VARCHAR(255) NOT NULL
 );
 
 -- ============================================
@@ -51,10 +53,15 @@ CREATE TABLE podcast_entity (
     audio_url VARCHAR(500),
     audio_length VARCHAR(50),
     cover_image VARCHAR(500),
+    transcript VARCHAR(500),
+
+    -- id_plateforme UUID REFERENCES plateforme_entity(id) ON DELETE SET NULL,
+    id_ressource UUID REFERENCES ressource_entity(id) ON DELETE CASCADE,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     published_at TIMESTAMP,
-    domain VARCHAR(50) NOT NULL CHECK (domain IN ('EDUCATION', 'AGRICULTURE', 'TRAFFIC_RESEAU', 'TECHNOLOGY', 'TAXI', 'SCIENCE')),
+    domain VARCHAR(50) NOT NULL ,
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PUBLISHED', 'REFUSED', 'ARCHIVED')),
     content_type VARCHAR(20) NOT NULL
 );
@@ -77,7 +84,7 @@ CREATE TABLE blog_entity (
     author_id UUID NOT NULL,
     organisation_id UUID,
 
-    id_plateforme UUID REFERENCES plateforme_entity(id) ON DELETE SET NULL,
+    -- id_plateforme UUID REFERENCES plateforme_entity(id) ON DELETE SET NULL,
     id_ressource UUID REFERENCES ressource_entity(id) ON DELETE CASCADE,
 
     audio_length VARCHAR(50),
@@ -99,7 +106,7 @@ CREATE INDEX idx_blog_organisation ON blog_entity(organisation_id);
 CREATE INDEX idx_blog_domain ON blog_entity(domain);
 CREATE INDEX idx_blog_status ON blog_entity(status);
 CREATE INDEX idx_blog_published_at ON blog_entity(published_at);
-CREATE INDEX idx_blog_plateforme ON blog_entity(id_plateforme);
+-- CREATE INDEX idx_blog_plateforme ON blog_entity(id_plateforme);
 CREATE INDEX idx_blog_ressource ON blog_entity(id_ressource);
 
 

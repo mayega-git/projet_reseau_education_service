@@ -12,11 +12,13 @@ import com.letsgo.education_service.service.servicepodcast.PodcastService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +33,7 @@ import java.util.UUID;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/podcasts")
+@RequestMapping("/education/api/podcasts")
 public class PodcastController {
 
     private final PodcastService podcastService;
@@ -78,8 +80,8 @@ public class PodcastController {
 ) {
     System.out.println("=== CRÉATION PODCAST ===");
     System.out.println("JSON reçu : " + createDTOJson);
-    System.out.println("Audio présent : " + (audioFile != null));
-    System.out.println("Cover présent : " + (coverFile != null));
+    System.out.println("Audio présent : " + audioFile.hasElement());
+    System.out.println("Cover présent : " + coverFile.hasElement());
 
             return Mono.fromCallable(() -> {
                 try {
@@ -119,7 +121,17 @@ public class PodcastController {
         errorPodcast.setDescription(description);
         return errorPodcast;
     }
- /* 
+
+    @GetMapping
+    @Operation(summary = "Récupérer tous les podcasts")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Succès"),
+            @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
+    })
+    public Flux<Podcast_entity> getAllPodcast() {
+            return podcastService.getAllPodcast();
+    }
+  
     @GetMapping("/{id}")
     @Operation(summary = "Récupérer un podcast par son ID")
     @ApiResponses({
@@ -131,6 +143,7 @@ public class PodcastController {
             .map(ResponseEntity::ok)
             .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+            
 
     @PatchMapping("/{id}/publish")
     @Operation(summary = "Publier un podcast")
@@ -143,8 +156,12 @@ public class PodcastController {
             .map(ResponseEntity::ok)
             .defaultIfEmpty(ResponseEntity.notFound().build());
     }
- //erreur
-    @PutMapping("/{id}")
+
+   
+    
+    
+    @PutMapping(value = "/{id}",consumes = MediaType.APPLICATION_JSON_VALUE,
+    produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Mettre à jour un podcast")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Podcast mis à jour"),
@@ -152,14 +169,40 @@ public class PodcastController {
     })
     public Mono<ResponseEntity<Podcast_entity>> updatePodcast(
             @PathVariable String id,
-            @RequestBody PodcastCreateDTO updateDTO) {
-
+            @Valid @RequestBody PodcastCreateDTO updateDTO) {
+                System.out.println("UPDATE PODCAST CONTROLLER HIT");
          return podcastService.updatePodcast(id, updateDTO)
             .map(updatedBlog -> ResponseEntity.ok(updatedBlog))
             .onErrorResume(NoSuchElementException.class, e -> Mono.just(ResponseEntity.notFound().build()))
             .onErrorResume(IllegalStateException.class, e -> 
                 Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
     }
+
+    @GetMapping("/{idPodcast}/coverpodcast")
+    public Mono<ResponseEntity<Flux<DataBuffer>>> cover(@PathVariable UUID idPodcast) {
+        System.out.println("=====PODCAST SERVICE - GET COVER IMAGE ========");
+
+        return podcastService.getCoverImage(idPodcast)
+            .map(file -> ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.getHeaders().getContentType().toString()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .body(file.getBody())
+            );
+    }
+
+    @GetMapping("/{idPodcast}/audiopodcast")
+    public Mono<ResponseEntity<Flux<DataBuffer>>> audio(@PathVariable UUID idPodcast) {
+        System.out.println("=====PODCAST SERVICE - GET AUDIO IMAGE =======");
+
+        return podcastService.getAudioPodcast(idPodcast)
+            .map(file -> ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.getHeaders().getContentType().toString()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .body(file.getBody())
+            );
+    }
+                
+    /*
  
     @PutMapping("/{id}/cover")
     @Operation(summary = "Ajouter ou modifier une image de couverture pour un podcast")

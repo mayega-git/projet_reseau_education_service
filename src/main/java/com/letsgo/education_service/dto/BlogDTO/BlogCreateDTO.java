@@ -2,6 +2,7 @@ package com.letsgo.education_service.dto.BlogDTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import java.util.List;
@@ -21,15 +22,15 @@ public class BlogCreateDTO {
     private String description;
 
 
-    /*@Schema(description = "URL de l'image de couverture", example = "https://example.com/image.jpg")
-    private String coverImg;*/
+   
 
-    @NotBlank
+    @NotNull(message = "L'identifiant de l'auteur est requis")
     @Schema(description = "ID de l'auteur du blog", example = "123456")
     private UUID authorId;
 
-    @NotBlank(message = "S'il appartient à une organisation")
-    private UUID OrganisationId;
+    @NotNull(message = "S'il appartient à une organisation")
+    @Schema(description = "ID de l'organisation", example = "123456")
+    private UUID organisationId;
 
     @NotBlank
     @Schema(description = "Domaine du blog", example = "Litterature")
@@ -38,6 +39,7 @@ public class BlogCreateDTO {
     @NotBlank
     @Schema(description = "Contenu du blog", example = "Spring Boot facilite le développement des applications Spring...")
     private String content;
+
 
 
 
@@ -54,13 +56,13 @@ public class BlogCreateDTO {
 
     
 
-    @NotBlank
-    @Schema(description = "categorie", example = "Roman,Essai")
+    @NotEmpty
+    @Schema(description = "categorie", example = "[\"Roman\",\"Essai\"]")
     private List<String> categories;
 
-    @NotNull
+    /*@NotNull
     @Schema(description = "plateformeId" , example = "123e4567-e89b-12d3-a456-426614174000")
-    private UUID plateformeId;
+    private UUID plateformeId;*/
 
 
 
