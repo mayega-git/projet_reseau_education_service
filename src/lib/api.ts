@@ -6,6 +6,8 @@ export const BASE_URL_EDUCATION_API = process.env.NEXT_PUBLIC_EDUCATION_API;
 export const BASE_URL_REWIEW_API = process.env.NEXT_PUBLIC_REVIEW_API;
 export const BASE_URL_ORGANISATION_API =
   process.env.NEXT_PUBLIC_ORGANISATION_API;
+export const BASE_URL_NEWSLETTER_API =
+  process.env.NEXT_PUBLIC_NEWSLETTER_API;
 
 export const UserServiceRoutes = {
   login: `${BASE_URL_USER_API}/api/users/login`,
@@ -39,4 +41,11 @@ export const ReviewServiceRoutes = {
 export const OrganisationServiceRoutes = {
   organisation: `${BASE_URL_ORGANISATION_API}/api/v1/organisation`,
   employee: `${BASE_URL_ORGANISATION_API}/api/v1/employee`,
+};
+
+export const NewsletterServiceRoutes = {
+  categories: `${BASE_URL_NEWSLETTER_API}/api/categorie`,
+  lecteurs: `${BASE_URL_NEWSLETTER_API}/api/lecteurs`,
+  lecteursRegister: `${BASE_URL_NEWSLETTER_API}/api/lecteurs/register`,
+  newsletters: `${BASE_URL_NEWSLETTER_API}/api/newsletters/newsletters`,
 };

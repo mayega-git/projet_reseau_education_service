@@ -1,25 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 
 type NavRefs = {
-  [key: string]: HTMLLIElement | null; // Map of nav names to their corresponding DOM elements
+  [key: string]: HTMLLIElement | null;
 };
-const NavTabsMain = () => {
+
+const NavTabsNewsLetter = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  //to dynamically calculate the width of the nav element
   const navRefs = useRef<NavRefs>({});
   const [sliderWidth, setSliderWidth] = useState<number>(0);
   const [sliderLeft, setSliderLeft] = useState<number>(0);
-  //  const activeTab = (searchParams.get('tab') || 'blog').toLowerCase();
-  const activeTab =
-    pathname === '/' ? 'Blog' : pathname === '/podcast' ? 'Podcast' : '';
 
-  //Set slider position on page load and when tab changes
+  const activeTab =
+    pathname.startsWith('/newsletter/create') ||
+    pathname.startsWith('/newsletter/update')
+      ? 'Create'
+      : 'Newsletters';
+
   useEffect(() => {
     const selectedNav = navRefs.current[activeTab];
 
@@ -30,37 +31,34 @@ const NavTabsMain = () => {
     }
   }, [activeTab]);
 
-  const handleNavClick = (navName: 'Manage' | 'Edit') => {
-    // const newParams = new URLSearchParams(searchParams);
-    // newParams.set('tab', navName.toLowerCase());
-    // router.push(`?${newParams.toString()}`, { scroll: false });
-    if (navName === 'Manage') {
-      console.log('➡️ Pushing to /newsletter/manage');
-      router.push(`/${navName.toLowerCase()}`);
-    } else if (navName === 'Edit') {
-      router.push(`/`);
+  const handleNavClick = (tab: 'Newsletters' | 'Create') => {
+    if (tab === 'Newsletters') {
+      router.push('/u/newsletter');
+    } else {
+      router.push('/newsletter/create');
     }
   };
+
   return (
     <div>
-      {' '}
-      {/* navigation */}
       <nav className="border-b-[2px] border-b-grey-100">
         <div className="container">
           <div className="bg-white">
             <ul className="text-center flex w-full gap-6 items-center p-0 m-0">
-              {['Manage', 'Edit'].map((tab) => (
+              {['Newsletters', 'Create'].map((tab) => (
                 <li
                   key={tab}
                   ref={(el) => {
                     navRefs.current[tab] = el;
                   }}
                   className={`text-[16px] px-4 inline py-3 ${
-                    activeTab.toLocaleLowerCase() === tab.toLowerCase()
+                    activeTab.toLowerCase() === tab.toLowerCase()
                       ? 'text-primaryPurple-500'
                       : 'text-black-300'
                   } cursor-pointer`}
-                  onClick={() => handleNavClick(tab as 'Manage' | 'Edit')}
+                  onClick={() =>
+                    handleNavClick(tab as 'Newsletters' | 'Create')
+                  }
                 >
                   <a className="paragraph-medium-medium m-0 py-[0.5rem]">
                     {tab}
@@ -82,4 +80,4 @@ const NavTabsMain = () => {
   );
 };
 
-export default NavTabsMain;
+export default NavTabsNewsLetter;

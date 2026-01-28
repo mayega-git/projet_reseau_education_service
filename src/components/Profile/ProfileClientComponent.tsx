@@ -315,11 +315,25 @@ export default function ProfileClientComponent({
                 activeTab === 'edit' &&
                 role &&
                 !role.includes(AppRoles.SUPER_ADMIN || AppRoles.ADMIN) && (
-                  <div className="bg-white rounded-lg shadow-md p-6">
+                  <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">
                       Edit Profile
                     </h2>
                     <UpdateUserForm />
+                    <div className="rounded-lg border border-grey-100 p-4 bg-gray-50">
+                      <p className="paragraph-medium-medium">
+                        Newsletters
+                      </p>
+                      <p className="paragraph-small-normal text-black-300 mt-1">
+                        Modifie les categories pour recevoir les newsletters
+                        qui t'interessent.
+                      </p>
+                      <Link href="/newsletter/categories">
+                        <Button variant="outline" className="mt-3">
+                          Editer mes categories
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 )}
             </div>

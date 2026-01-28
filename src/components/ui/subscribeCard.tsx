@@ -3,8 +3,11 @@ import React, { useState } from 'react';
 import '@/styles/background.css';
 import Image from 'next/image';
 import Button from './customButton';
+import NewsletterSubscribeDialog from '@/components/SubscribeCards/NewsletterSubscribeDialog';
 const SubscribeCard = () => {
   const [email, setEmail] = useState<string>('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <div className="w-[100%] mx-auto h-[380px] max-w-[100%]">
       {' '}
@@ -35,7 +38,11 @@ const SubscribeCard = () => {
               placeholder="Email Address"
               className="px-[16px] py-[8px] outline-none bg-inherit w-full paragraph-medium-normal"
             />
-            <Button variant="secondary" round>
+            <Button
+              variant="secondary"
+              round
+              onClick={() => setDialogOpen(true)}
+            >
               Subscribe
             </Button>
           </div>
@@ -45,6 +52,11 @@ const SubscribeCard = () => {
           </p>
         </div>
       </section>
+      <NewsletterSubscribeDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        prefillEmail={email}
+      />
     </div>
   );
 };

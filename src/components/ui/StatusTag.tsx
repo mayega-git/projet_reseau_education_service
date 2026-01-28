@@ -19,16 +19,25 @@ const StatusTag: React.FC<StatusTagProps> = ({ status }) => {
 
   switch (status) {
     case 'DRAFT':
+    case 'BROUILLON':
       statusColor = 'bg-blue-500 text-white';
       break;
     case 'ARCHIVED':
       statusColor = 'bg-gray-500 text-white';
       break;
     case 'REFUSED':
+    case 'REJETEE':
       statusColor = 'bg-red-500 text-white';
       break;
     case 'PUBLISHED':
+    case 'PUBLIEE':
       statusColor = 'bg-green-500 text-white';
+      break;
+    case 'SOUMISE':
+      statusColor = 'bg-yellow-500 text-white';
+      break;
+    case 'VALIDEE':
+      statusColor = 'bg-emerald-500 text-white';
       break;
     default:
       statusColor = 'bg-gray-300 text-gray-700';
