@@ -28,7 +28,7 @@ export const getAllPodcastsEverCreated = async (): Promise<
  * Fetch all blogs based on status
  * @param {string} status - The status of blogs to fetch
  */
-export const getAllBlogs = async (status: string): Promise<BlogInterface[]> => {
+export const getAllBlogs = async (status: string,): Promise<BlogInterface[]> => {
   const url = new URL(`${EducationServiceRoutes.blogs}/published`);
   url.searchParams.set('status', status);
   return (await fetchData<BlogInterface[]>(url.toString())) || [];

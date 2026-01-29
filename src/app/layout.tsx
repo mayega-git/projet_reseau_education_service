@@ -1,11 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+ //'use client'; 
+
 import type { Metadata } from 'next';
+import { useEffect } from 'react';
 import { Geist, Geist_Mono, Poppins, Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { GlobalStateProvider } from '@/context/GlobalStateContext';
 import { Toaster } from 'sonner';
 import HeaderWrapper from '@/components/Header/HeaderWrapper';
+import AuthInitializer from '@/components/AuthInitializer/AuthInitializer';
+
+
 
 const poppins = Poppins({
   variable: '--font-poppins',
@@ -29,12 +35,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
+  
   return (
     
           <html lang="en">
             <body
               className={`${inter.variable} ${poppins.variable} antialiased`}
             >
+              <AuthInitializer />
               <AuthProvider>
                 <GlobalStateProvider>
                   <main>{children}</main>
