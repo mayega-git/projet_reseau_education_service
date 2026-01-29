@@ -7,6 +7,7 @@ interface TextAreaProps {
   maxWords?: number; // Maximum word count limit
   rows?: number; // Number of visible rows
   height?: string; // Height of the textarea
+  id?: string;
   value: string; // Controlled value
   onChange: (value: string) => void; // Function to handle text input changes
 }
@@ -16,6 +17,7 @@ const TextArea: React.FC<TextAreaProps> = ({
   placeholder = 'Type here...',
   maxWords = 100,
   rows = 5,
+  id,
   value, // Now the component accepts a value prop
   onChange,
 }) => {
@@ -40,6 +42,7 @@ const TextArea: React.FC<TextAreaProps> = ({
   return (
     <div className="w-full">
       <textarea
+        id={id}
         value={value}
         onChange={handleChange}
         rows={rows}
