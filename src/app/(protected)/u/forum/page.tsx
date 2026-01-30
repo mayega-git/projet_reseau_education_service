@@ -5,12 +5,12 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/FetchFromForum';
 import { User } from '@/types/User';
 import type { DiscussionGroup, Post } from '@/types/forum';
-import GroupsList from '@/components/Forum/GroupList';
-import GroupDetail from '@/components/Forum/GroupDetail';
-import PostDetail from '@/components/Forum/PostDetail';
-import AdminView from '@/components/Forum/AdminView';
-import LoadingSpinner from '@/components/Forum/LoadingSpinner';
-import ErrorMessage from '@/components/Forum/ErrorMessage';
+import GroupsList from '@/app/(protected)/u/forum/components/GroupList';
+import GroupDetail from '@/app/(protected)/u/forum/components/GroupDetail';
+import PostDetail from '@/app/(protected)/u/forum/components/PostDetail';
+import AdminView from '@/app/(protected)/u/forum/components/AdminView';
+import LoadingSpinner from '@/app/(protected)/u/forum/components/LoadingSpinner';
+import ErrorMessage from '@/app/(protected)/u/forum/components/ErrorMessage';
 //import {Header} from '@/components/Header/Header2'
 import HeaderWrapper from '@/components/Header/HeaderWrapper';
 import { useAuth } from '@/context/AuthContext';
