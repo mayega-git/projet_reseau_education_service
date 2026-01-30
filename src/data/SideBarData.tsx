@@ -189,7 +189,7 @@ export const SideBarData = [
   {
     title: 'Forum',
     url: `/u/forum`,
-    role: [AppRoles.SUPER_ADMIN,AppRoles.AUTHOR,AppRoles.USER],
+    role: [AppRoles.SUPER_ADMIN, AppRoles.AUTHOR, AppRoles.ADMIN, AppRoles.USER],
     icon: MessageCircle,
     subnav: [],
   },

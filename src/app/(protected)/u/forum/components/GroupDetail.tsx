@@ -5,9 +5,16 @@ import { useState, useEffect, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import PostCard from './PostCard';
+<<<<<<<< HEAD:src/components/Forum/GroupDetail.tsx
 import LoadingSpinner from './LoadingSpinner';
 import type { DiscussionGroup, Category, Post } from '@/types/forum';
 import { api } from '@/lib/FetchFromForum'
+========
+import LoadingSpinner from '@/app/(protected)/u/forum/components/LoadingSpinner';
+import type { DiscussionGroup, Category, Post } from '@/types/forum';
+import { api } from '@/lib/FetchFromForum';
+import { API_BASE_URL } from "@/types/constants";
+>>>>>>>> 00b2d8e (Adaptation selon l'organisation):src/app/(protected)/u/forum/components/GroupDetail.tsx
 import { User, GetUser, GetRoles } from '@/types/User';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FORUM_URL

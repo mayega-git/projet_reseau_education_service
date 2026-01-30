@@ -1,7 +1,6 @@
+import { API_BASE_URL } from '@/types/constants';
 
 import type { DiscussionGroup, Category, Post, Comment } from '@/types/forum';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_FORUM_URL
 
 // Mapper function to normalize backend Post response to frontend format
 function normalizePost(post: any): Post {
