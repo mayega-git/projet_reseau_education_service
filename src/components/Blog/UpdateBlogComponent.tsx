@@ -145,7 +145,7 @@ const UpdateBlogComponent: React.FC<UpdateBlogComponentProps> = ({ blog }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch tags');
+        throw new Error('Failed to fetch categories');
       }
 
       const data = await response.json();

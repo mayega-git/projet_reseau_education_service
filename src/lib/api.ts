@@ -24,28 +24,28 @@ export const UserServiceRoutes = {
 };
 
 export const EducationServiceRoutes = {
-  tags: `${BASE_URL_EDUCATION_API}/api/tags`,
-  category: `${BASE_URL_EDUCATION_API}/api/categories`,
-  blogs: `${BASE_URL_EDUCATION_API}/api/blogs`,
-  podcasts: `${BASE_URL_EDUCATION_API}/api/podcasts`,
-  favoritess: `${BASE_URL_EDUCATION_API}/api/favorites`,
+  tags: `${BASE_URL_EDUCATION_API}/tags`,
+  category: `${BASE_URL_EDUCATION_API}/categories`,
+  blogs: `${BASE_URL_EDUCATION_API}/blogs`,
+  podcasts: `${BASE_URL_EDUCATION_API}/podcasts`,
+  favoritess: `${BASE_URL_EDUCATION_API}/favorites`,
 };
 
 export const ReviewServiceRoutes = {
-  ratings: `${BASE_URL_REWIEW_API}/api/ratings`,
-  comments: `${BASE_URL_REWIEW_API}/api/comments`,
-  commentReply: `${BASE_URL_REWIEW_API}/api/comment_replies`,
-  entityStats: `${BASE_URL_REWIEW_API}/api/entity/stats`,
+  ratings: `${BASE_URL_REWIEW_API}/ratings`,
+  comments: `${BASE_URL_REWIEW_API}/comments`,
+  commentReply: `${BASE_URL_REWIEW_API}/comment_replies`,
+  entityStats: `${BASE_URL_REWIEW_API}/entity/stats`,
 };
 
 export const OrganisationServiceRoutes = {
-  organisation: `${BASE_URL_ORGANISATION_API}/api/v1/organisation`,
-  employee: `${BASE_URL_ORGANISATION_API}/api/v1/employee`,
+  organisation: `${BASE_URL_ORGANISATION_API}/v1/organisation`,
+  employee: `${BASE_URL_ORGANISATION_API}/v1/employee`,
 };
 
 export const NewsletterServiceRoutes = {
-  categories: `${BASE_URL_NEWSLETTER_API}/api/categorie`,
-  lecteurs: `${BASE_URL_NEWSLETTER_API}/api/lecteurs`,
-  lecteursRegister: `${BASE_URL_NEWSLETTER_API}/api/lecteurs/register`,
-  newsletters: `${BASE_URL_NEWSLETTER_API}/api/newsletters/newsletters`,
+  categories: `${BASE_URL_NEWSLETTER_API}/categorie`,
+  lecteurs: `${BASE_URL_NEWSLETTER_API}/lecteurs`,
+  lecteursRegister: `${BASE_URL_NEWSLETTER_API}/lecteurs/register`,
+  newsletters: `${BASE_URL_NEWSLETTER_API}/newsletters/newsletters`,
 };

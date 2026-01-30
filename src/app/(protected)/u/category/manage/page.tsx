@@ -30,6 +30,8 @@ async function fetchAllCategories(): Promise<TagInterface[]> {
       next: { tags: ['categories'] }, // Caches for 60 seconds for better performance
     });
 
+    console.log(response);
+
     if (!response.ok) {
       throw new Error('Failed to fetch tags');
     }

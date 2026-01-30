@@ -15,7 +15,7 @@ export interface GetUser {
   firstName: string;
   lastName: string;
   email: string;
-  role: string[];
+  roles: string[];
   token: null;
 }
 

@@ -16,7 +16,7 @@ export const coverBlogData: BlogInterface = {
   publishedAt: '2024-10-08T09:00:00.000Z',
   readingTime: 7,
   tags: ['travel', 'history', 'dangerous roads'],
-  categoryId: '1256',
+  category: '1256',
 };
 
 // export const AllBlogData: BlogInterface[] = [
