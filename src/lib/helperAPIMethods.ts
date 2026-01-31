@@ -1,6 +1,13 @@
 // Reusable Fetch(GET) Helper Function
 export const fetchData = async <T>(url: string): Promise<T | null> => {
   try {
+
+    const tokenResponse = await fetch('/api/auth/token', { method: 'GET', credentials: 'include' });
+        const tokenData = await tokenResponse.json();
+        const accessToken = tokenData.accessToken;
+        if (!accessToken) {
+          console.warn('⚠️ No access token found, request will be sent without Authorization header');
+        }
     console.log("➡️ URL transmise à fetchData:", url);
 
     const response = await fetch(url, { method: 'GET' });

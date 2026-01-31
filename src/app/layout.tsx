@@ -10,6 +10,8 @@ import { GlobalStateProvider } from '@/context/GlobalStateContext';
 import { Toaster } from 'sonner';
 import HeaderWrapper from '@/components/Header/HeaderWrapper';
 import AuthInitializer from '@/components/AuthInitializer/AuthInitializer';
+import ClientWrapper from '@/components/ClientWrapper/ClientWrapper';
+
 
 
 
@@ -44,13 +46,14 @@ export default function RootLayout({
             <body
               className={`${inter.variable} ${poppins.variable} antialiased`}
             >
-              <AuthInitializer />
+              <ClientWrapper>
               <AuthProvider>
                 <GlobalStateProvider>
                   <main>{children}</main>
                   <Toaster />
                 </GlobalStateProvider>
               </AuthProvider>
+              </ClientWrapper>
             </body>
           </html>
       

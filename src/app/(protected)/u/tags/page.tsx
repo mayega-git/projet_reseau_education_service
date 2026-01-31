@@ -1,9 +1,75 @@
-import React from 'react'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Suspense } from 'react';
+import EmptyState from '@/components/EmptyState/EmptyState';
+import { EducationServiceRoutes } from '@/lib/api';
+import { TagInterface } from '@/types/tag';
+import { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from '@/components/DataTable/DataTableDisplay';
+import CreateTagDialogWrapper from '@/components/Tags/CreateDialogWrapper';
+import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { revalidateTag } from 'next/cache';
 
-const Tags = () => {
-  return (
-    <div>Tags</div>
-  )
+async function fetchAllTags(): Promise<TagInterface[]> {
+
+  
+  
+  try {
+
+    
+    
+    const response = await fetch(`${EducationServiceRoutes.tags}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json'  },
+      next: { tags: ['tags'] }, // Caches for 60 seconds for better performance
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch tags');
+    }
+
+    return response.json();
+  } catch (err) {
+    console.error('Error fetching tags:', err);
+    return []; // Return an empty array to avoid blocking
+  }
 }
 
-export default Tags
+export default async function ManageTags() {
+  // Server Action
+  async function create() {
+    'use server';
+    revalidateTag('tags');
+    // Mutate data
+  }
+  const tags = await fetchAllTags();
+  // console.log(tags);
+
+  return tags.length > 0 ? (
+    <div className="flex flex-col">
+      <div className="flex flex-col gap-8">
+        <SidebarPageHeading
+          title=" Tags"
+          subtitle="View tags"
+        />
+        <div className="flex justify-end">
+        </div>
+        <DataTable data={tags} type="tag" />
+      </div>
+    </div>
+  ) : (
+    <div className="flex flex-col gap-8 items-center">
+      <EmptyState />
+   
+    </div>
+  );
+}

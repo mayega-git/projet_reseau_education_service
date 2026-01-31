@@ -6,7 +6,7 @@ import EmptyState from '@/components/EmptyState/EmptyState';
 import { EducationServiceRoutes } from '@/lib/api';
 import { TagInterface } from '@/types/tag';
 import { ColumnDef } from '@tanstack/react-table';
-import { DataTable } from '@/components/DataTable/DataTable';
+import { DataTable } from '@/components/DataTable/DataTableDisplay';
 
 import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
 import {
