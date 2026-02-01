@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { updateUserRoles } from '@/lib/FetchDataFromUserService';
+import { updateUserRoles } from '@/actions/user';
 import { GlobalNotifier } from '@/components/ui/GlobalNotifier';
 import { AppRoles } from '@/constants/roles';
 

@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
-import { EducationServiceRoutes } from '@/lib/api';
+// EducationServiceRoutes removed — all commented-out code used it.
 import { GlobalNotifier } from '../ui/GlobalNotifier';
 import TextArea from '../ui/textarea';
 

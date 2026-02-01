@@ -8,7 +8,7 @@ import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import NewsletterDataTable from '@/components/DataTable/NewsletterDataTable';
 import { useAuth } from '@/context/AuthContext';
-import { fetchNewslettersByRedacteur } from '@/lib/FetchNewsletterData';
+import { fetchNewslettersByRedacteur } from '@/actions/newsletter';
 import type { NewsletterResponse } from '@/types/newsletter';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';

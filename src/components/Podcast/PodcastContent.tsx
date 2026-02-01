@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
-import { UserServiceRoutes } from '@/lib/api';
+// Removed: UserServiceRoutes import (migrated to server actions)
 import { PodcastInterface } from '@/types/podcast';
 import { GetUser } from '@/types/User';
 import React, { useEffect, useRef, useState } from 'react';
@@ -21,9 +21,9 @@ import SubscribeCard from '../ui/subscribeCard';
 import CommentSection from '../Comment/CommentSection';
 import Link from 'next/link';
 import {
-  handleFollowUser,
-  handleIsFollowing,
-} from '@/lib/FetchDataFromUserService';
+  followUser,
+  isFollowing as checkIsFollowing,
+} from '@/actions/user';
 import { useAuth } from '@/context/AuthContext';
 import { entityType } from '@/constants/entityType';
 import ViewsButton from '../ui/ViewsButton';
@@ -55,10 +55,9 @@ const PodcastContent: React.FC<PodcastContentProps> = ({
 
   const handleFollowUserInline = async () => {
     if (user?.id) {
-      handleFollowUser(
+      followUser(
         user?.id,
-        podcast.authorId,
-        userData.firstName + ' ' + userData.lastName
+        podcast.authorId
       );
       window.location.reload();
     }
@@ -66,7 +65,7 @@ const PodcastContent: React.FC<PodcastContentProps> = ({
 
   const checkFollowingStatus = async () => {
     if (user?.id && podcast?.authorId) {
-      const isFollowingValue = await handleIsFollowing(
+      const isFollowingValue = await checkIsFollowing(
         user.id,
         podcast.authorId
       );

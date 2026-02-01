@@ -4,9 +4,9 @@ import dynamic from 'next/dynamic';
 import BlogContent from '@/components/Blog/BlogContent';
 import NotFoundPage from '@/app/not-found';
 import HeaderWrapper from '@/components/Header/HeaderWrapper';
-import { fetchBlogAudio, fetchBlogImage } from '@/lib/FetchBlogAndPodcastData';
-import { fetchUserData } from '@/lib/FetchDataFromUserService';
-import { fetchBlogById } from '@/lib/FetchBlogAndPodcastData';
+import { fetchBlogAudio, fetchBlogImage } from '@/lib/fetchers/blog';
+import { fetchUserData } from '@/lib/fetchers/user';
+import { fetchBlogById } from '@/lib/fetchers/blog';
 
 // Lazy-load non-critical components
 const Footer = dynamic(() => import('@/components/Footer'));

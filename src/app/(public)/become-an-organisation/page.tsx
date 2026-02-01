@@ -6,8 +6,8 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import Image from 'next/image';
-import { OrganisationServiceRoutes } from '@/lib/api';
-import { handleUpgradeRole } from '@/lib/FetchDataFromUserService';
+import { createOrganisation } from '@/actions/organisation';
+import { assignRole } from '@/actions/user';
 import { AppRoles } from '@/constants/roles';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -80,7 +80,7 @@ const BecomeAnOrganizationPage: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const { user, roleUpgrade } = useAuth();
+  const { user, refreshUser } = useAuth();
 
   useEffect(() => {
     console.log(errors); // Check if there are validation errors
@@ -97,7 +97,7 @@ const BecomeAnOrganizationPage: React.FC = () => {
     }
 
     // Construct the data to send
-    const dataToSend = {
+    const dataToSend: Record<string, unknown> = {
       organisationId: user.id,
       businessActorId: user.id,
       ...data,
@@ -105,31 +105,14 @@ const BecomeAnOrganizationPage: React.FC = () => {
     console.log('Data to Send:', dataToSend);
 
     try {
-      // Make the API call
-      const response = await fetch(
-        `${OrganisationServiceRoutes.organisation}/create`,
-        {
-          method: 'POST',
-          body: JSON.stringify(dataToSend),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      // Log the API response
-      const apiResponse = await response.json();
+      // Make the API call via server action
+      const apiResponse = await createOrganisation(dataToSend);
       console.log('API Response:', apiResponse);
 
-      // Handle successful response
-      if (response.ok) {
-        const userUpgrade = await handleUpgradeRole(user.id, AppRoles.ADMIN);
-        roleUpgrade(userUpgrade.token);
-        alert('Organization created successfully!');
-      } else {
-        console.error('API Error:', apiResponse.message);
-        alert(`Error: ${apiResponse.message}`);
-      }
+      // Upgrade role after successful creation
+      await assignRole(user.id, AppRoles.ADMIN);
+      refreshUser({ ...user, roles: [...(user.roles ?? []), AppRoles.ADMIN] });
+      alert('Organization created successfully!');
     } catch (err) {
       console.error('An error occurred', err);
       alert('An error occurred. Please try again.');

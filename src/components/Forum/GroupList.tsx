@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import GroupCard from './GroupCard';
 import type { DiscussionGroup } from '@/types/forum';
-import { api } from '@/lib/FetchFromForum';
+import { createGroup } from '@/actions/forum';
 
 interface GroupsListProps {
   initialGroups: DiscussionGroup[];
@@ -28,7 +28,7 @@ export default function GroupsList({ initialGroups, onGroupClick, onGroupsUpdate
 
     try {
       setError(null);
-      await api.createGroup(
+      await createGroup(
         formData.get('name') as string,
         formData.get('description') as string,
         user.id

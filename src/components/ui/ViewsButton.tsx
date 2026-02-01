@@ -11,7 +11,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import CustomButton from './customButton';
-import { fetchAllCommentsByEntityId } from '@/lib/FetchDataFromReviewService';
+import { fetchComments } from '@/actions/review';
 
 interface ViewButtonProps {
   entityType: string;

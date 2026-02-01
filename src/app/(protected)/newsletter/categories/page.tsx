@@ -10,7 +10,7 @@ import {
   fetchLecteurPreferences,
   fetchNewsletterCategories,
   updateLecteurCategories,
-} from '@/lib/FetchNewsletterData';
+} from '@/actions/newsletter';
 import type { NewsletterCategory } from '@/types/newsletter';
 import { GlobalNotifier } from '@/components/ui/GlobalNotifier';
 

@@ -14,7 +14,7 @@ import { Star } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import TextArea from '../ui/textarea';
 import CustomButton from '../ui/customButton';
-import { ReviewServiceRoutes } from '@/lib/api';
+import { rateApplication } from '@/actions/education';
 import { GlobalNotifier } from '../ui/GlobalNotifier';
 
 interface RatingModalProps {
@@ -40,19 +40,13 @@ const RatingModal: React.FC<RatingModalProps> = ({
   const handleSubmit = async () => {
     if (user && rating) {
       try {
-        const url = new URL(`${ReviewServiceRoutes.ratings}/rate-application`);
-        url.searchParams.set('userId', user.id);
-        //id pour application
-        url.searchParams.set('entityId',"309e9fde-5f29-4c31-b515-ce54de2e4223");
-        url.searchParams.set('score', rating.toString());
-        url.searchParams.set('feedback', textValue.value);
-
-        const response = await fetch(url.toString(), {
-          method: 'POST',
-        });
-
-        const data = await response.json();
-        if (response.ok) {
+        const ok = await rateApplication(
+          user.id,
+          '309e9fde-5f29-4c31-b515-ce54de2e4223',
+          rating,
+          textValue.value,
+        );
+        if (ok) {
           GlobalNotifier('Thank you for rating us', 'success');
         }
       } catch (err) {

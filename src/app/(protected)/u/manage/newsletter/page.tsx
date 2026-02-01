@@ -3,7 +3,7 @@ import React from 'react';
 import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import NewsletterDataTable from '@/components/DataTable/NewsletterDataTable';
-import { fetchNewslettersByStatus } from '@/lib/FetchNewsletterData';
+import { fetchNewslettersByStatus } from '@/lib/fetchers/newsletter';
 
 const ManageNewsletters = async () => {
   const newsletters = await fetchNewslettersByStatus();

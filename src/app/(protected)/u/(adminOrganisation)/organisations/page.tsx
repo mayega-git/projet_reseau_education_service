@@ -3,7 +3,7 @@ import DisplayOrg from '@/components/Organization/DisplayOrg';
 import { Button } from '@/components/ui/button';
 import CustomButton from '@/components/ui/customButton';
 import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
-import { fetchAllOrganisations } from '@/lib/FetchFromOrganisationData';
+import { fetchAllOrganisations } from '@/lib/fetchers/organisation';
 import { GetOrganisation } from '@/types/organisation';
 import { Plus } from 'lucide-react';
 import Image from 'next/image';

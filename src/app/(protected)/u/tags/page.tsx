@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Suspense } from 'react';
 import EmptyState from '@/components/EmptyState/EmptyState';
-import { EducationServiceRoutes } from '@/lib/api';
+import { EducationRoutes } from '@/lib/server/services';
 import { TagInterface } from '@/types/tag';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/DataTable/DataTableDisplay';
@@ -27,7 +27,7 @@ async function fetchAllTags(): Promise<TagInterface[]> {
 
     
     
-    const response = await fetch(`${EducationServiceRoutes.tags}`, {
+    const response = await fetch(`${EducationRoutes.tags}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json'  },
       next: { tags: ['tags'] }, // Caches for 60 seconds for better performance

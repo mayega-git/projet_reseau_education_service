@@ -9,7 +9,7 @@ import {
   getAllBlogsEverCreated,
   getAllPodcasts,
   getAllPodcastsEverCreated,
-} from '@/lib/FetchBlogAndPodcastData';
+} from '@/actions/blog';
 import SideBarHeader from '@/components/Header/SideBarHeader';
 import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
 

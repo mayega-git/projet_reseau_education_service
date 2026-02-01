@@ -19,7 +19,7 @@ import {
   fetchNewsletterCategories,
   registerLecteur,
   subscribeLecteurToCategories,
-} from '@/lib/FetchNewsletterData';
+} from '@/actions/newsletter';
 import type { NewsletterCategory } from '@/types/newsletter';
 import { cn } from '@/lib/utils';
 

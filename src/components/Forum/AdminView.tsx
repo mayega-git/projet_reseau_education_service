@@ -3,7 +3,7 @@
 import { Check, X, Trash2 } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import type { DiscussionGroup } from '@/types/forum';
-import { api } from '@/lib/FetchFromForum';
+import { validateGroup, rejectGroup, deleteGroup } from '@/actions/forum';
 
 interface AdminViewProps {
   groups: DiscussionGroup[];
@@ -14,7 +14,7 @@ interface AdminViewProps {
 export default function AdminView({ groups, onBack, onUpdate }: AdminViewProps) {
   const handleValidate = async (groupId: string) => {
     try {
-      await api.validateGroup(groupId);
+      await validateGroup(groupId);
       onUpdate();
     } catch (err) {
       console.error('Erreur lors de la validation:', err);
@@ -25,7 +25,7 @@ export default function AdminView({ groups, onBack, onUpdate }: AdminViewProps) 
     if (!confirm('Êtes-vous sûr de vouloir rejeter ce forum ?')) return;
 
     try {
-      await api.rejectGroup(groupId);
+      await rejectGroup(groupId);
       onUpdate();
     } catch (err) {
       console.error('Erreur lors du rejet:', err);
@@ -38,7 +38,7 @@ export default function AdminView({ groups, onBack, onUpdate }: AdminViewProps) 
     if (!confirm(message)) return;
 
     try {
-      await api.deleteGroup(groupId);
+      await deleteGroup(groupId);
       onUpdate();
     } catch (err) {
       console.error('Erreur lors de la suppression:', err);

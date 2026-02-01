@@ -3,11 +3,10 @@ import BlogCard from '@/components/Blog/blogCard';
 import BlogContent from '@/components/Blog/BlogContent';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import PodcastCard from '@/components/Podcast/podcastCard';
-import { EducationServiceRoutes } from '@/lib/api';
 import {
   fetchPodcastImages,
   getAllPodcasts,
-} from '@/lib/FetchBlogAndPodcastData';
+} from '@/lib/fetchers/blog';
 import { PodcastInterface } from '@/types/podcast';
 import React, { Suspense } from 'react';
 

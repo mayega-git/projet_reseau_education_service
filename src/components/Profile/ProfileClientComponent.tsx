@@ -13,10 +13,10 @@ import { PodcastInterface } from '@/types/podcast';
 import HeaderWrapper from '../Header/HeaderWrapper';
 import { formatDateOrRelative } from '@/helper/formatDateOrRelative';
 import {
-  handleFollowUser,
-  handleIsFollowing,
-  handleUnfollowUser,
-} from '@/lib/FetchDataFromUserService';
+  followUser,
+  isFollowing as checkIsFollowing,
+  unfollowUser,
+} from '@/actions/user';
 import { useAuth } from '@/context/AuthContext';
 import TextArea from '../ui/textarea';
 import UserAvatar from '../UserAvatar';
@@ -69,24 +69,22 @@ export default function ProfileClientComponent({
   const handleFollowUserInline = async () => {
     const action = isFollowing ? 'unfollow' : 'follow';
     if (action === 'follow' && user?.id) {
-      await handleFollowUser(
+      await followUser(
         user?.id,
-        userData.id,
-        userData.firstName + '' + userData.lastName
+        userData.id
       );
       window.location.reload();
     } else if (action === 'unfollow' && user?.id) {
-      await handleUnfollowUser(
+      await unfollowUser(
         user?.id,
-        userData.id,
-        userData.firstName + '' + userData.lastName
+        userData.id
       );
       window.location.reload();
     }
   };
   const checkFollowingStatus = async () => {
     if (user?.id && userData?.id) {
-      const isFollowingValue = await handleIsFollowing(user.id, userData?.id);
+      const isFollowingValue = await checkIsFollowing(user.id, userData?.id);
       setIsFollowing(isFollowingValue);
     }
   };

@@ -9,7 +9,7 @@ import AudioPlayerPreview from '../AudioPlayer/AudioPlayerPreview';
 import { CreatePodcastInterface } from '@/types/podcast';
 import { calculateReadingTime } from '@/helper/calculateReadingTime';
 import { TagInterface } from '@/types/tag';
-import { EducationServiceRoutes } from '@/lib/api';
+import { fetchAllTags as serverFetchTags, fetchAllCategories as serverFetchCategories, createPodcast as serverCreatePodcast } from '@/actions/education';
 import { CategoryInterface } from '@/types/category';
 import SingleSelectDropdown from '../ui/SingleComponentDropdown';
 import { useAuth } from '@/context/AuthContext';
@@ -75,41 +75,19 @@ const CreatePodcastComponent = () => {
 
   async function fetchAllTags() {
     try {
-      const response = await fetch(`${EducationServiceRoutes.tags}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        next: { tags: ['tags'] }, // Caches for 60 seconds for better performance
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch tags');
-      }
-
-      const data = await response.json();
-      setTags(data);
+      const data = await serverFetchTags();
+      setTags(data as TagInterface[]);
     } catch (err) {
       console.error('Error fetching tags:', err);
-      return []; // Return an empty array to avoid blocking
     }
   }
 
   async function fetchAllCategories() {
     try {
-      const response = await fetch(`${EducationServiceRoutes.category}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        next: { tags: ['tags'] }, // Caches for 60 seconds for better performance
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch tags');
-      }
-
-      const data = await response.json();
-      setCategories(data);
+      const data = await serverFetchCategories();
+      setCategories(data as CategoryInterface[]);
     } catch (err) {
-      console.error('Error fetching tags:', err);
-      return []; // Return an empty array to avoid blocking
+      console.error('Error fetching categories:', err);
     }
   }
 
@@ -216,10 +194,7 @@ const CreatePodcastComponent = () => {
 
     try {
       setIsLoading(true);
-      const response = await fetch(`${EducationServiceRoutes.podcasts}`, {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await serverCreatePodcast(formData);
 
       const data = await response.json();
       if (response.ok) {

@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/customButton';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { UserServiceRoutes } from '@/lib/api';
 
 interface Errors {
   email: string;
@@ -15,7 +14,7 @@ interface Errors {
   fullName: string;
 }
 const Signup = () => {
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const router = useRouter();
   const [passwordIsVisible, setPasswordIsVisible] = useState(false);
@@ -83,24 +82,14 @@ const Signup = () => {
 
     // If no errors, proceed with form submission
     try {
-      const response = await fetch(`${UserServiceRoutes.create}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          password: formData.password,
-          role: ['USER'],
-        }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        login(data.data.token); // Store token in AuthContext and localStorage
-      } else {
-        alert(data.message); // Handle failed signup
-        console.log(data);
+      const result = await signup(
+        formData.firstName,
+        formData.lastName,
+        formData.email,
+        formData.password,
+      );
+      if (!result.success) {
+        alert(result.error ?? 'Signup failed');
       }
     } catch (error) {
       console.error('Signup error:', error);

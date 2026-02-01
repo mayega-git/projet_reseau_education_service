@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import UserDataTable from '@/components/DataTable/UserDataTable';
-import { getAllUsersWithBlogCount, UserWithBlogCount } from '@/lib/FetchDataFromUserService';
+import { getAllUsersWithBlogCount } from '@/actions/user';
+import type { UserWithBlogCount } from '@/actions/user';
 
 const ManageUsers = () => {
   const [users, setUsers] = useState<UserWithBlogCount[]>([]);

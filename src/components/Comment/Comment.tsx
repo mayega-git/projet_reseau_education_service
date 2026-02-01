@@ -24,12 +24,12 @@ import { GetUser } from '@/types/User';
 import { formatDateOrRelative } from '@/helper/formatDateOrRelative';
 import {
   replyComment,
-  fetchAllCommentsRepliesForCommentId,
-} from '@/lib/FetchDataFromReviewService';
+  fetchCommentReplies,
+} from '@/actions/review';
 import LikeDislikeButton from '../ui/LikeDislikeButton';
 import { entityType } from '@/constants/entityType';
 import { Ellipsis, Trash2 } from 'lucide-react';
-import { fetchUserData } from '@/lib/FetchDataFromUserService';
+import { fetchUserData } from '@/actions/user';
 import DeleteDialog from '../Dialogs/DeleteDialog';
 import UserAvatar from '../UserAvatar';
 
@@ -66,7 +66,7 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
   // Fetch replies for the comment
   const fetchReplies = async () => {
     try {
-      const replies = await fetchAllCommentsRepliesForCommentId(comment.id);
+      const replies = await fetchCommentReplies(comment.id);
       if (replies) {
         setReplies(replies);
       }

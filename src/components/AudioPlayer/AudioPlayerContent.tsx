@@ -3,7 +3,7 @@
 import {
   fetchBlogAudio,
   fetchPodcastAudio,
-} from '@/lib/FetchBlogAndPodcastData';
+} from '@/actions/blog';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from '../Loader/Loader';
 import LoaderBlack from '../Loader/LoaderBlack';

@@ -11,7 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { fetchAllCommentsByEntityId } from '@/lib/FetchDataFromReviewService';
+import { fetchComments } from '@/actions/review';
 
 interface CommentsButtonProps {
   entityType: string;
@@ -27,7 +27,7 @@ const CommentsButton: React.FC<CommentsButtonProps> = ({
 
   const getAllCommentInformation = async () => {
     try {
-      const data = await fetchAllCommentsByEntityId(entityId);
+      const data = await fetchComments(entityId);
       if (data) {
         setCommentCount(data.length);
       }

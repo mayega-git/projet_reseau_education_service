@@ -19,7 +19,7 @@ import StatusTag from '../ui/StatusTag';
 import { GetUser } from '@/types/User';
 import { PodcastInterface } from '@/types/podcast';
 import { useRouter } from 'next/navigation';
-import { EducationServiceRoutes } from '@/lib/api';
+import { publishBlog as serverPublishBlog, publishPodcast as serverPublishPodcast } from '@/actions/education';
 import { GlobalNotifier } from '../ui/GlobalNotifier';
 import RefuseDialog from '../Dialogs/RefuseDialog';
 import DeleteDialog from '../Dialogs/DeleteDialog';
@@ -49,33 +49,10 @@ const BlogAndPodcastDataTable: React.FC<DataTableProps> = ({
 
   const publishBlog = async (id: string) => {
     try {
-      const response = await fetch(
-        `${EducationServiceRoutes.blogs}/${id}/publish`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id }),
-        }
-      );
-      console.log(`[publishBlog] Réponse reçue, status: ${response.status} ${response.statusText}`);
-
-
-      if (!response.ok) {
-        let errorBody = '';
-      try {
-        errorBody = await response.text();
-      } catch (e) {
-        errorBody = '<impossible à lire>';
+      const result = await serverPublishBlog(id);
+      if (!result.ok) {
+        throw new Error('Failed to publish blog');
       }
-        console.error(`[publishBlog] Échec de la publication, corps de la réponse: ${errorBody}`);
-        throw new Error(`Failed to publish blog: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('[publishBlog] Publication réussie, réponse JSON:', data);
-
       GlobalNotifier('Blog published successfully', 'success');
       window.location.reload();
     } catch (err) {
@@ -85,22 +62,10 @@ const BlogAndPodcastDataTable: React.FC<DataTableProps> = ({
 
   const publishPodcast = async (id: string) => {
     try {
-      const response = await fetch(
-        `${EducationServiceRoutes.podcasts}/${id}/publish`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to podcast blog: ${response.statusText}`);
+      const result = await serverPublishPodcast(id);
+      if (!result.ok) {
+        throw new Error('Failed to publish podcast');
       }
-
-      const data = await response.json();
       GlobalNotifier('Podcast published successfully', 'success');
       window.location.reload();
     } catch (err) {

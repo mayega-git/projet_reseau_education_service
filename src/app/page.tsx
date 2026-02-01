@@ -4,7 +4,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAllBlogs } from '@/lib/FetchBlogAndPodcastData';
+import { getAllBlogs } from '@/actions/blog';
 import BlogPage from '@/components/Blog/HomePage';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import Header1 from '@/components/Header/Header1';

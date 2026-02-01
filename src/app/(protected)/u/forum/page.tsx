@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 //import { MOCK_USER } from '@/app/forum-app/lib/constants';
-import { api } from '@/lib/FetchFromForum';
+import { getValidatedGroups, getAllGroups } from '@/actions/forum';
 import { User } from '@/types/User';
 import type { DiscussionGroup, Post } from '@/types/forum';
 import GroupsList from '@/components/Forum/GroupList';
@@ -37,7 +37,7 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getValidatedGroups();
+      const data = await getValidatedGroups();
       setGroups(data);
     } catch (err) {
       setError('Erreur lors du chargement des forums');
@@ -54,7 +54,7 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getAllGroups();
+      const data = await getAllGroups();
       setGroups(data);
       setView('admin');
     } catch (err) {

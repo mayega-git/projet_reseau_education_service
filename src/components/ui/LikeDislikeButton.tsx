@@ -7,14 +7,13 @@ import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import CustomButton from './customButton';
 import { LikeDislikeRequest } from '@/types/comment';
 import {
-  fetchAllDislikesForEntityId,
-  fetchAllLikesForEntityId,
-  fetchHasDislikedStatusByUserId,
-  fetchHasLikedStatusByUserId,
-} from '@/lib/FetchDataFromReviewService';
-import { likeOrDislikeEntity } from '@/lib/FetchDataFromReviewService';
+  fetchDislikesCount,
+  fetchLikesCount,
+  hasDisliked as checkHasDisliked,
+  hasLiked as checkHasLiked,
+  likeOrDislike,
+} from '@/actions/review';
 import { useAuth } from '@/context/AuthContext';
-import { ReviewServiceRoutes } from '@/lib/api';
 
 interface LikeCountProps {
   entityId: string;
@@ -58,26 +57,10 @@ const LikeDislikeButton: React.FC<LikeCountProps> = ({
   // };
 
   const likeOrDislikeEntity = async (params: LikeDislikeRequest) => {
-    const url = new URL(`${ReviewServiceRoutes.ratings}/like-or-dislike`);
-    url.searchParams.set('userId', params.userId);
-    url.searchParams.set('entityId', params.entityId);
-    url.searchParams.set('entityType', params.entityType);
-    url.searchParams.set('isLike', params.isLike.toString());
-
     try {
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        const text = await response.text();
-        console.log('Response text:', text);
-      } else {
-        console.error(`Failed to like/dislike entity: ${response.status}`);
-        return null;
-      }
+      await likeOrDislike(params);
     } catch (error) {
-      console.error('Error making POST request', error);
+      console.error('Error making like/dislike request', error);
     }
   };
 
@@ -142,10 +125,10 @@ const LikeDislikeButton: React.FC<LikeCountProps> = ({
   const fetchAllLikesAndDislikesForEntityId = async () => {
     if (user) {
       try {
-        const likes = await fetchAllLikesForEntityId(entityId);
-        const dislikes = await fetchAllDislikesForEntityId(entityId);
-        const hasLiked = await fetchHasLikedStatusByUserId(user.id, entityId);
-        const hasDisliked = await fetchHasDislikedStatusByUserId(
+        const likes = await fetchLikesCount(entityId);
+        const dislikes = await fetchDislikesCount(entityId);
+        const hasLiked = await checkHasLiked(user.id, entityId);
+        const hasDisliked = await checkHasDisliked(
           user.id,
           entityId
         );

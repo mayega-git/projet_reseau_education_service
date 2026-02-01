@@ -23,7 +23,7 @@ import { GetUser } from '@/types/User';
 import { AppRoles } from '@/constants/roles';
 import EditUserRolesDialog from '@/components/Dialogs/EditUserRolesDialog';
 import DeleteUserDialog from '@/components/Dialogs/DeleteUserDialog';
-import { UserWithBlogCount } from '@/lib/FetchDataFromUserService';
+import { UserWithBlogCount } from '@/actions/user';
 
 interface UserDataTableProps {
   data: UserWithBlogCount[];

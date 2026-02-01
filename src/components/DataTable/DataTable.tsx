@@ -13,7 +13,7 @@ import {
 import { Edit, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagInterface } from '@/types/tag';
-import { EducationServiceRoutes } from '@/lib/api';
+// Removed: EducationServiceRoutes import (migrated to server actions)
 import { useState } from 'react';
 import DeleteDialog from '@/components/Dialogs/DeleteDialog';
 

@@ -14,7 +14,7 @@ import {
   fetchNewsletterCategories,
   submitNewsletter,
   updateNewsletter,
-} from '@/lib/FetchNewsletterData';
+} from '@/actions/newsletter';
 import type {
   NewsletterCategory,
   NewsletterCreateRequest,

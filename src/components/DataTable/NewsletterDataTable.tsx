@@ -20,7 +20,7 @@ import {
   rejectNewsletter,
   submitNewsletter,
   validateNewsletter,
-} from '@/lib/FetchNewsletterData';
+} from '@/actions/newsletter';
 import { GlobalNotifier } from '@/components/ui/GlobalNotifier';
 import { NewsletterResponse, NewsletterStatus } from '@/types/newsletter';
 import {

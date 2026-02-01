@@ -6,8 +6,8 @@ import PodcastContent from '@/components/Podcast/PodcastContent';
 import {
   fetchPodcastById,
   fetchPodcastImage,
-} from '@/lib/FetchBlogAndPodcastData';
-import { fetchUserData } from '@/lib/FetchDataFromUserService';
+} from '@/lib/fetchers/blog';
+import { fetchUserData } from '@/lib/fetchers/user';
 import React from 'react';
 
 export default async function PodcastPostPage({

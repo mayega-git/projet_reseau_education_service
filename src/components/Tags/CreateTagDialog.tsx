@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import CustomButton from '../ui/customButton';
-import { EducationServiceRoutes } from '@/lib/api';
+import { createTag } from '@/actions/education';
 import { useRouter } from 'next/navigation';
 import { GlobalNotifier } from '../ui/GlobalNotifier';
 import TextArea from '../ui/textarea';
@@ -60,19 +60,14 @@ const CreateTagDialog: React.FC<CreateTagDialogProps> = ({
     if (!validateForm()) return;
 
     try {
-      const response = await fetch(`${EducationServiceRoutes.tags}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form), // envoie directement l'objet form
-      });
+      const result = await createTag(form);
 
-      if (response.ok) {
+      if (result.ok) {
         GlobalNotifier('Tag created successfully', 'success');
         setShowDialog(false);
-        router.refresh(); // refresh la page / server component
+        router.refresh();
       } else {
-        const err = await response.json();
-        GlobalNotifier(`Failed to create tag: ${err.message || 'Unknown error'}`, 'error');
+        GlobalNotifier(`Failed to create tag: ${result.error || 'Unknown error'}`, 'error');
       }
     } catch (err) {
       GlobalNotifier('Failed to create tag', 'error');

@@ -7,7 +7,7 @@ import LandingPageWelcomeSection from '@/components/ui/LandingPageWelcomeSection
 import {
   fetchPodcastImages,
   getAllPodcasts,
-} from '@/lib/FetchBlogAndPodcastData';
+} from '@/lib/fetchers/blog';
 import React, { Suspense } from 'react';
 
 const PodcastFeed = async () => {

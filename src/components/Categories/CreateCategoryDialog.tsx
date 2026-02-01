@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import CustomButton from '../ui/customButton';
-import { EducationServiceRoutes } from '@/lib/api';
+import { createCategory } from '@/actions/education';
 import { useRouter } from 'next/navigation';
 import { GlobalNotifier } from '../ui/GlobalNotifier';
 import TextArea from '../ui/textarea';
@@ -62,13 +62,9 @@ const CreateCategoryDialog: React.FC<CreateCategoryDialogProps> = ({
     if (!validateForm()) return;
 
     try {
-      const response = await fetch(`${EducationServiceRoutes.category}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+      const ok = await createCategory(form);
 
-      if (response.ok) {
+      if (ok) {
         GlobalNotifier('Category created successfully', 'success');
         setShowDialog(false);
         window.location.reload();

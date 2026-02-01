@@ -7,8 +7,6 @@ import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/customButton';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { UserServiceRoutes } from '@/lib/api';
-// import { UserLogin } from '@/lib/api';
 
 interface Errors {
   email: string;
@@ -58,21 +56,9 @@ const Login = () => {
     if (!validateForm()) return;
 
     try {
-      const response = await fetch(`${UserServiceRoutes.login}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        login(data.data.token);
-      } else {
-        alert(data.message);
-        console.log(data);
+      const result = await login(formData.email, formData.password);
+      if (!result.success) {
+        alert(result.error ?? 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);

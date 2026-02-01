@@ -9,7 +9,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useAuth } from '@/context/AuthContext';
-import { EducationServiceRoutes } from '@/lib/api';
 import { GlobalNotifier } from './GlobalNotifier';
 
 interface AddToFavoritiesButtonProps {

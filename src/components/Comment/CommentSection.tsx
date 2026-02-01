@@ -9,8 +9,8 @@ import { Button } from '../ui/button';
 import { CreateCommentInterface, GetCommentInteface } from '@/types/comment';
 import {
   createComment,
-  fetchAllCommentsByEntityId,
-} from '@/lib/FetchDataFromReviewService';
+  fetchComments,
+} from '@/actions/review';
 import UserAvatar from '../UserAvatar';
 
 interface CommentSectionProps {
@@ -41,7 +41,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchAllCommentsByEntityId(entityId);
+      const data = await fetchComments(entityId);
       console.log("Tous les commentaires "+ data);
       
       setAllComments(data || []);

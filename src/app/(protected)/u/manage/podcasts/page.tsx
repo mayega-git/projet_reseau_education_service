@@ -1,12 +1,12 @@
 import BlogAndPodcastDataTable from '@/components/DataTable/BlogAndPodcastDataTable';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
-import { getAllPodcastsEverCreated } from '@/lib/FetchBlogAndPodcastData';
-import { fetchAllUsers } from '@/lib/FetchDataFromUserService';
+import { getAllPodcasts } from '@/lib/fetchers/blog';
+import { fetchAllUsers } from '@/lib/fetchers/user';
 import React from 'react';
 
 const ManagePodcasts = async () => {
-  const allPodcasts = await getAllPodcastsEverCreated();
+  const allPodcasts = await getAllPodcasts();
   if (!allPodcasts || allPodcasts.length === 0) {
     return (
       <div className="flex flex-col gap-8">

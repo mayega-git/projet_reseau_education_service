@@ -16,9 +16,9 @@ import ConvertDraftToHTML from '../Editor/ConvertDtaftoHtml';
 import CommentSection from '../Comment/CommentSection';
 import { useAuth } from '@/context/AuthContext';
 import {
-  handleFollowUser,
-  handleIsFollowing,
-} from '@/lib/FetchDataFromUserService';
+  followUser,
+  isFollowing as checkIsFollowing,
+} from '@/actions/user';
 import Link from 'next/link';
 import { entityType } from '@/constants/entityType';
 import { usePathname, useRouter } from 'next/navigation';
@@ -47,10 +47,9 @@ const BlogContent: React.FC<BlogContentParams> = ({
 
   const handleFollowUserInline = async () => {
     if (user?.id) {
-      handleFollowUser(
+      followUser(
         user?.id,
-        blog.authorId,
-        userData.firstName + ' ' + user.lastName
+        blog.authorId
       );
       window.location.reload();
     }
@@ -58,7 +57,7 @@ const BlogContent: React.FC<BlogContentParams> = ({
 
   const checkFollowingStatus = async () => {
     if (user?.id && blog?.authorId) {
-      const isFollowingValue = await handleIsFollowing(user.id, blog.authorId);
+      const isFollowingValue = await checkIsFollowing(user.id, blog.authorId);
       setIsFollowing(isFollowingValue);
     }
   };

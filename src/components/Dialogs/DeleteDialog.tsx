@@ -3,9 +3,8 @@
 
 import React from 'react';
 import { Button } from '../ui/button';
-import { EducationServiceRoutes, ReviewServiceRoutes } from '@/lib/api';
 import { GlobalNotifier } from '../ui/GlobalNotifier';
-import { deleteData } from '@/lib/helperAPIMethods';
+import { deleteEntity } from '@/actions/education';
 
 interface DeleteDialogProps {
   type: string;
@@ -27,36 +26,8 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
   setShowDialog,
 }) => {
   const handleDelete = async (id: string) => {
-    let url = '';
-    let itemType = '';
-
-    switch (type) {
-      case 'tag':
-        url = `${EducationServiceRoutes.tags}/${id}`;
-        itemType = 'Tag';
-        break;
-      case 'category':
-        url = `${EducationServiceRoutes.category}/${id}`;
-        itemType = 'Category';
-        break;
-      case 'comment':
-        url = `${ReviewServiceRoutes.comments}/${id}`;
-        itemType = 'Comment';
-        break;
-      case 'blog':
-        url = `${EducationServiceRoutes.blogs}/${id}`;
-        itemType = 'Blog';
-        break;
-      case 'podcast':
-        url = `${EducationServiceRoutes.podcasts}/${id}`;
-        itemType = 'podcast';
-        break;
-      default:
-        console.error('Invalid type:', type);
-        return;
-    }
-
-    const isDeleted = await deleteData(url);
+    const isDeleted = await deleteEntity(type, id);
+    const itemType = type.charAt(0).toUpperCase() + type.slice(1);
 
     if (isDeleted) {
       GlobalNotifier(`${itemType} deleted successfully`, 'success');

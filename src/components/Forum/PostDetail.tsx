@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import CommentTree from './CommentTree';
 import LoadingSpinner from './LoadingSpinner';
 import type { Post, Comment } from '@/types/forum';
-import { api } from '@/lib/FetchFromForum';
+import { getCommentsByPost, likePost, dislikePost, createForumComment, updateForumComment, deleteForumComment } from '@/actions/forum';
 
 interface PostDetailProps {
   post: Post;
@@ -23,14 +23,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, token } = useAuth();
-
-  // Update API token when it changes
-  useEffect(() => {
-    if (token) {
-      api.setToken(token);
-    }
-  }, [token]);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (post?.postId) {
@@ -50,7 +43,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     if (!post?.postId) return;
     setLoading(true);
     try {
-      const data = await api.getCommentsByPost(post.postId);
+      const data = await getCommentsByPost(post.postId);
       setComments(data);
     } catch (err) {
       setError('Erreur lors du chargement des commentaires');
@@ -65,7 +58,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     setIsLiking(true);
     setError(null);
     try {
-      const updatedPost = await api.likePost(post.postId, user.id);
+      const updatedPost = await likePost(post.postId, user.id);
       setPost(updatedPost);
     } catch (err) {
       console.error('Like error:', err);
@@ -82,7 +75,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     setIsDisliking(true);
     setError(null);
     try {
-      const updatedPost = await api.dislikePost(post.postId, user.id);
+      const updatedPost = await dislikePost(post.postId, user.id);
       setPost(updatedPost);
     } catch (err) {
       console.error('Dislike error:', err);
@@ -103,7 +96,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     const content = (form.elements.namedItem('content') as HTMLTextAreaElement).value;
 
     try {
-      await api.createComment(post.postId, content, user.id);
+      await createForumComment(post.postId, content, user.id);
       form.reset();
       loadComments();
       setPost({ ...post, commentCount: post.commentCount + 1 });
@@ -117,7 +110,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     if (!post?.postId || !user?.id) return;
 
     try {
-      await api.createComment(post.postId, content, user.id, parentCommentId);
+      await createForumComment(post.postId, content, user.id, parentCommentId);
       loadComments();
       setPost({ ...post, commentCount: post.commentCount + 1 });
     } catch (err) {
@@ -132,7 +125,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     const content = (form.elements.namedItem('content') as HTMLTextAreaElement).value;
 
     try {
-      await api.updateComment(editingComment!.commentaireId, content);
+      await updateForumComment(editingComment!.commentaireId, content);
 
       setEditingComment(null);
       loadComments();
@@ -146,7 +139,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     if (!post || !user?.id) return;
 
     try {
-      await api.deleteComment(commentId, user.id);
+      await deleteForumComment(commentId, user.id);
       loadComments();
       setPost({ ...post, commentCount: Math.max(0, post.commentCount - 1) });
     } catch (err) {

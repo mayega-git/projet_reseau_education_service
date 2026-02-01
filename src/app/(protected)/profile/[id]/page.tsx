@@ -6,12 +6,12 @@ import { getInitials } from '@/helper/getInitials';
 import {
   getAllBlogsByAuthorId,
   getAllPodcastsByAuthorId,
-} from '@/lib/FetchBlogAndPodcastData';
+} from '@/lib/fetchers/blog';
 import {
   fetchUserData,
   getAllFollowersOfUser,
   getAllUsersAUserIsFollowing,
-} from '@/lib/FetchDataFromUserService';
+} from '@/lib/fetchers/user';
 import React from 'react';
 
 export default async function ProfilePage2({

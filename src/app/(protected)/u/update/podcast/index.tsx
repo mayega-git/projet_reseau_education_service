@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-undef */
 import EmptyState from '@/components/EmptyState/EmptyState';
 import UpdatePodcastComponent from '@/components/Podcast/UpdatePodcastComponent';
-import { fetchPodcastById } from '@/lib/FetchBlogAndPodcastData';
+import { fetchPodcastById } from '@/lib/fetchers/blog';
 import React from 'react';
 
 export default async function UpdatePodcast({

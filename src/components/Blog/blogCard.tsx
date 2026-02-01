@@ -11,7 +11,7 @@ import Link from 'next/link';
 import LikeDislikeButton from '../ui/LikeDislikeButton';
 import CommentsButton from '../ui/CommentsButton';
 import { formatDateOrRelative } from '@/helper/formatDateOrRelative';
-import { EducationServiceRoutes } from '@/lib/api';
+// Removed: EducationServiceRoutes import (migrated to server actions)
 import { GetUser } from '@/types/User';
 import { entityType } from '@/constants/entityType';
 import { useAuth } from '@/context/AuthContext';

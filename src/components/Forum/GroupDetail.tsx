@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import PostCard from './PostCard';
 import LoadingSpinner from './LoadingSpinner';
 import type { DiscussionGroup, Category, Post } from '@/types/forum';
-import { api } from '@/lib/FetchFromForum'
+import { getCategoriesByGroup, getPostsByGroup, createCategory, createPost } from '@/actions/forum'
 import { User, GetUser, GetRoles } from '@/types/User';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FORUM_URL
@@ -28,14 +28,7 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, token } = useAuth();
-
-  // Update API token when it changes
-  useEffect(() => {
-    if (token) {
-      api.setToken(token);
-    }
-  }, [token]);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!groupId) return;
@@ -49,8 +42,8 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
     setError(null);
     try {
       const [categoriesData, postsData] = await Promise.all([
-        api.getCategoriesByGroup(groupId),
-        api.getPostsByGroup(groupId)
+        getCategoriesByGroup(groupId),
+        getPostsByGroup(groupId)
       ]);
       setCategories(categoriesData ?? []);
       setPosts(postsData ?? []);
@@ -88,12 +81,12 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
     }
 
     try {
-      await api.createCategory(groupId, name);
+      await createCategory(groupId, name);
 
-      form.reset(); // ✅ plus d'erreur
+      form.reset();
       setShowCategoryForm(false);
 
-      const updatedCategories = await api.getCategoriesByGroup(groupId);
+      const updatedCategories = await getCategoriesByGroup(groupId);
       setCategories(updatedCategories);
     } catch (err: any) {
       setError(err.message || "Erreur lors de la création de la catégorie");
@@ -131,7 +124,7 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
         return;
       }
 
-      await api.createPost(
+      await createPost(
         groupId,
         title,
         content,

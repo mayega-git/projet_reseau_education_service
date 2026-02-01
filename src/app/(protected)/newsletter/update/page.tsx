@@ -8,7 +8,7 @@ import NavTabsNewsLetter from '@/components/Navigation/NavTabsNewsLetter';
 import CreateNewsLetterComponents from '@/components/NewsLetter/CreateNewsLetterComponents';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import { useAuth } from '@/context/AuthContext';
-import { fetchNewslettersByRedacteur } from '@/lib/FetchNewsletterData';
+import { fetchNewslettersByRedacteur } from '@/actions/newsletter';
 import type { NewsletterResponse } from '@/types/newsletter';
 import { Button } from '@/components/ui/button';
 

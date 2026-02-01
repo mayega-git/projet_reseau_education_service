@@ -1,5 +1,5 @@
 'use client';
-import { EducationServiceRoutes } from '@/lib/api';
+import { fetchBlogImage } from '@/actions/blog';
 import { useEffect, useState } from 'react';
 
 export default function BlogCoverImage({ blogId }: { blogId: string }) {
@@ -12,15 +12,7 @@ export default function BlogCoverImage({ blogId }: { blogId: string }) {
       try {
         setLoading(true);
         setError(false);
-        //string url = 
-        const response = await fetch(`${EducationServiceRoutes.blogs}/${blogId}/coverblog`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
+        const url = await fetchBlogImage(blogId);
         setImageUrl(url);
         
       } catch (err) {

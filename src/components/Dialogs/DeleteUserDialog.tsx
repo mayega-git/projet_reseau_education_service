@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { deleteUser } from '@/lib/FetchDataFromUserService';
+import { deleteUser } from '@/actions/user';
 import { GlobalNotifier } from '@/components/ui/GlobalNotifier';
 import { Trash2 } from 'lucide-react';
 
