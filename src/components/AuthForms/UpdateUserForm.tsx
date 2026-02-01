@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import Button from '@/components/ui/customButton';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { UserServiceRoutes } from '@/lib/api';
+import { UserRoutes } from '@/lib/server/services';
 import TextArea from '../ui/textarea';
 import { GlobalNotifier } from '../ui/GlobalNotifier';
 

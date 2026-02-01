@@ -6,10 +6,10 @@ import Header2 from './Header2';
 import { useAuth } from '@/context/AuthContext';
 
 const HeaderWrapper = () => {
-  const { token } = useAuth();
+  const { user } = useAuth();
 
   // Render Header2 if the user is authenticated, otherwise render Header
-  return token ? <Header2 /> : <Header />;
+  return user ? <Header2 /> : <Header />;
 };
 
 export default HeaderWrapper;

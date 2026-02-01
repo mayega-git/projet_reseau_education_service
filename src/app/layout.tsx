@@ -1,19 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
- //'use client'; 
-
 import type { Metadata } from 'next';
-import { useEffect } from 'react';
-import { Geist, Geist_Mono, Poppins, Inter } from 'next/font/google';
+import { Poppins, Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { GlobalStateProvider } from '@/context/GlobalStateContext';
 import { Toaster } from 'sonner';
-import HeaderWrapper from '@/components/Header/HeaderWrapper';
-import AuthInitializer from '@/components/AuthInitializer/AuthInitializer';
-import ClientWrapper from '@/components/ClientWrapper/ClientWrapper';
-
-
-
+import { getCurrentUser } from '@/actions/auth';
 
 const poppins = Poppins({
   variable: '--font-poppins',
@@ -23,7 +14,7 @@ const poppins = Poppins({
 
 const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-inter', // Optional: Use a CSS custom property for better integration
+  variable: '--font-inter',
   weight: ['400', '500', '600', '700'],
 });
 
@@ -32,30 +23,25 @@ export const metadata: Metadata = {
   description: 'LetsGo Blog And Podcast',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Pre-load user on the server so the AuthProvider gets initial state
+  // without needing localStorage or useEffect hydration.
+  const user = await getCurrentUser();
 
-
-  
   return (
-    
-          <html lang="en">
-            <body
-              className={`${inter.variable} ${poppins.variable} antialiased`}
-            >
-              <ClientWrapper>
-              <AuthProvider>
-                <GlobalStateProvider>
-                  <main>{children}</main>
-                  <Toaster />
-                </GlobalStateProvider>
-              </AuthProvider>
-              </ClientWrapper>
-            </body>
-          </html>
-      
+    <html lang="en">
+      <body className={`${inter.variable} ${poppins.variable} antialiased`}>
+        <AuthProvider initialUser={user}>
+          <GlobalStateProvider>
+            <main>{children}</main>
+            <Toaster />
+          </GlobalStateProvider>
+        </AuthProvider>
+      </body>
+    </html>
   );
 }

@@ -1,152 +1,152 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
+
+import { createContext, useContext, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { jwtDecode } from 'jwt-decode';
 import { User } from '@/types/User';
 import { AppRoles } from '@/constants/roles';
+import {
+  login as serverLogin,
+  logout as serverLogout,
+  signup as serverSignup,
+  type AuthResult,
+} from '@/actions/auth';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface AuthContextType {
-  token: string | null;
+  /** Decoded user info (from the HttpOnly cookie) — null when not logged in */
   user: User | null;
-  login: (token: string) => void;
-  logout: () => void;
-  roleUpgrade: (token: string) => void;
+  /** User roles shortcut */
   role: string[] | null;
+  /** True while a login/signup request is in flight */
+  isLoading: boolean;
+  /** Call the server action to log in, then update local state */
+  login: (email: string, password: string) => Promise<AuthResult>;
+  /** Call the server action to sign up */
+  signup: (
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+  ) => Promise<AuthResult>;
+  /** Clear session cookies and reset state */
+  logout: () => Promise<void>;
+  /** Update local user state after a role change (e.g. become author) */
+  refreshUser: (user: User) => void;
 }
 
 interface AuthProviderProps {
   children: React.ReactNode;
+  /** Pre-loaded user from the Server Component (RootLayout) */
+  initialUser?: User | null;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+// ---------------------------------------------------------------------------
+// Context
+// ---------------------------------------------------------------------------
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<string[] | null>(null);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// ---------------------------------------------------------------------------
+// Provider
+// ---------------------------------------------------------------------------
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({
+  children,
+  initialUser = null,
+}) => {
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [role, setRole] = useState<string[] | null>(initialUser?.roles ?? null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Check localStorage for token on initial load
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      setToken(storedToken);
-      const decodedUser = jwtDecode<User>(storedToken); // Decoding token to get user data
-      setUser(decodedUser);
-      setRole(decodedUser.roles);
-    }
-  }, []);
-
-  // Login function
-
-  const login = (token: string) => {
-    try {
-      // Store token in localStorage
-      localStorage.setItem('token', token);
-      setToken(token);
-
-      // Decode the token
-      const decodedUser = jwtDecode<User>(token);
-
-      // Log the decoded user for debugging
-      console.log('Decoded User:', decodedUser);
-
-      // Ensure roles are defined
-      if (!decodedUser.roles) {
-        console.error('Roles are undefined in the token payload');
-        return;
-      }
-
-      // Set user and roles in context
-      setUser(decodedUser);
-      setRole(decodedUser.roles);
-
-      // Redirect based on roles
+  // Determine where to redirect based on roles
+  const redirectByRole = useCallback(
+    (roles: string[]) => {
       if (
-        decodedUser.roles.includes(AppRoles.SUPER_ADMIN) ||
-        decodedUser.roles.includes(AppRoles.ADMIN) ||
-        decodedUser.roles.includes(AppRoles.AUTHOR)
+        roles.includes(AppRoles.SUPER_ADMIN) ||
+        roles.includes(AppRoles.ADMIN) ||
+        roles.includes(AppRoles.AUTHOR)
       ) {
-        // Redirect to dashboard for admins/authors
         router.push('/u/dashboard');
-      } else if (
-        decodedUser.roles.length === 1 &&
-        decodedUser.roles.includes(AppRoles.USER)
-      ) {
-        // Redirect to feed for regular users
+      } else if (roles.length === 1 && roles.includes(AppRoles.USER)) {
         router.push('/u/feed/blog');
-      } else {
-        console.error('Unknown role:', decodedUser.roles);
       }
-    } catch (error) {
-      console.error('Error decoding token or redirecting:', error);
-    }
-  };
+    },
+    [router],
+  );
 
-  const roleUpgrade = (token: string) => {
-    try {
-      // update role in local storage
-      localStorage.setItem('token', token);
-      setToken(token);
-
-      // Decode the token
-      const decodedUser = jwtDecode<User>(token);
-
-      // Log the decoded user for debugging
-      console.log('Decoded User:', decodedUser);
-
-      // Ensure roles are defined
-      if (!decodedUser.roles) {
-        console.error('Roles are undefined in the token payload');
-        return;
+  // ---- Login ----
+  const login = useCallback(
+    async (email: string, password: string): Promise<AuthResult> => {
+      setIsLoading(true);
+      try {
+        const result = await serverLogin(email, password);
+        if (result.success && result.user) {
+          setUser(result.user);
+          setRole(result.user.roles ?? null);
+          redirectByRole(result.user.roles ?? []);
+        }
+        return result;
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [redirectByRole],
+  );
 
-      // Set user and roles in context
-      setUser(decodedUser);
-      setRole(decodedUser.roles);
-
-      // Redirect based on roles
-      if (
-        decodedUser.roles.includes(AppRoles.SUPER_ADMIN) ||
-        decodedUser.roles.includes(AppRoles.ADMIN) ||
-        decodedUser.roles.includes(AppRoles.AUTHOR)
-      ) {
-        // Redirect to dashboard for admins/authors
-        router.push('/u/dashboard');
-      } else if (
-        decodedUser.roles.length === 1 &&
-        decodedUser.roles.includes(AppRoles.USER)
-      ) {
-        // Redirect to feed for regular users
-        router.push('/u/feed/blog');
-      } else {
-        console.error('Unknown role:', decodedUser.roles);
+  // ---- Signup ----
+  const signup = useCallback(
+    async (
+      firstName: string,
+      lastName: string,
+      email: string,
+      password: string,
+    ): Promise<AuthResult> => {
+      setIsLoading(true);
+      try {
+        const result = await serverSignup(firstName, lastName, email, password);
+        if (result.success && result.user) {
+          setUser(result.user);
+          setRole(result.user.roles ?? null);
+          redirectByRole(result.user.roles ?? []);
+        }
+        return result;
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error decoding token or redirecting:', error);
-    }
-  };
+    },
+    [redirectByRole],
+  );
 
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem('token'); // Remove token from localStorage
-    setToken(null);
+  // ---- Logout ----
+  const logout = useCallback(async () => {
+    await serverLogout();
     setUser(null);
     setRole(null);
-    router.push('/auth/login'); // Redirect to login page after logout
-  };
+    router.push('/auth/login');
+  }, [router]);
+
+  // ---- Refresh user (after role upgrade, etc.) ----
+  const refreshUser = useCallback((updatedUser: User) => {
+    setUser(updatedUser);
+    setRole(updatedUser.roles ?? null);
+  }, []);
 
   return (
     <AuthContext.Provider
-      value={{ token, user, login, logout, roleUpgrade, role }}
+      value={{ user, role, isLoading, login, signup, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

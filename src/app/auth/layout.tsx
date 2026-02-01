@@ -1,10 +1,11 @@
-// app/protected/layout.tsx
-import PublicRoute from '@/components/Routes/PublicRoute';
+// app/auth/layout.tsx
+// Redirect for already-authenticated users is now handled by middleware.ts.
+// This layout is a simple pass-through.
 
-export default function PublicLayout({
+export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <PublicRoute>{children}</PublicRoute>;
+  return <>{children}</>;
 }

@@ -9,14 +9,13 @@ import { useAuth } from '@/context/AuthContext';
 const Header1 = () => {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
   }, []);
+
+  const isLoggedIn = !!user;
 
   const handleLogout = () => {
     logout();

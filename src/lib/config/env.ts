@@ -1,9 +1,8 @@
-export const ENV = {
-  clientId: process.env.NEXT_PUBLIC_CLIENT_ID!,
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL!,
-};
+// src/lib/config/env.ts
+// Environment configuration.
+// Server-only values are accessed directly in lib/server/ modules.
+// This file keeps a minimal public config for client-side needs.
 
-export const SERVER_ENV = {
-  apiKey: process.env.API_KEY!,
-  backendApiUrl: process.env.BACKEND_API_URL!,
+export const ENV = {
+  clientId: process.env.NEXT_PUBLIC_CLIENT_ID ?? '',
 };
