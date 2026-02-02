@@ -14,7 +14,8 @@ Content-Type: application/json
   "email": "reda@example.com",
   "password": "password123",
   "nom": "Doe",
-  "prenom": "John"
+  "prenom": "John",
+
 }
 
 # 201
