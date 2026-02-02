@@ -5,6 +5,20 @@ const API_KEY = process.env.API_KEY!;
 
 export async function POST(request: NextRequest) {
   console.log('🔄 [API Route /refresh] ===== TOKEN REFRESH START =====');
+
+  if (!BACKEND_URL || !API_KEY) {
+    console.error('❌ [API Route /refresh] Missing auth configuration env vars');
+    return NextResponse.json(
+      {
+        error: 'Missing auth configuration',
+        missing: {
+          NEXT_PUBLIC_GATEWAY_URL: !BACKEND_URL,
+          API_KEY: !API_KEY,
+        },
+      },
+      { status: 500 }
+    );
+  }
   
   const refreshToken = request.cookies.get('refreshToken')?.value;
 

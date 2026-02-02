@@ -44,6 +44,94 @@ export const fetchNewsletterCategories = async (): Promise<
   }
 };
 
+export const createNewsletterCategory = async (
+  payload: Pick<NewsletterCategory, 'nom' | 'description'>
+): Promise<NewsletterCategory | null> => {
+  if (!BASE_URL_NEWSLETTER_API) {
+    console.error('Missing NEXT_PUBLIC_NEWSLETTER_API.');
+    return null;
+  }
+
+  try {
+    const response = await fetch(NewsletterServiceRoutes.categories, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = (await resolvePayload(response)) as NewsletterCategory | null;
+    if (!response.ok || !data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to create newsletter category.', error);
+    return null;
+  }
+};
+
+export const updateNewsletterCategory = async (
+  categoryId: string,
+  payload: Pick<NewsletterCategory, 'nom' | 'description'>
+): Promise<NewsletterCategory | null> => {
+  if (!BASE_URL_NEWSLETTER_API) {
+    console.error('Missing NEXT_PUBLIC_NEWSLETTER_API.');
+    return null;
+  }
+
+  if (!categoryId) {
+    return null;
+  }
+
+  try {
+    const url = new URL(`${NewsletterServiceRoutes.categories}/${categoryId}`);
+    if (payload.description) {
+      url.searchParams.set('description', payload.description);
+    }
+    if (payload.nom) {
+      url.searchParams.set('nom', payload.nom);
+    }
+    const response = await fetch(url.toString(), {
+      method: 'PUT',
+    });
+    const data = (await resolvePayload(response)) as NewsletterCategory | null;
+    if (!response.ok || !data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to update newsletter category.', error);
+    return null;
+  }
+};
+
+export const deleteNewsletterCategory = async (
+  categoryId: string
+): Promise<boolean> => {
+  if (!BASE_URL_NEWSLETTER_API) {
+    console.error('Missing NEXT_PUBLIC_NEWSLETTER_API.');
+    return false;
+  }
+
+  if (!categoryId) {
+    return false;
+  }
+
+  try {
+    const response = await fetch(
+      `${NewsletterServiceRoutes.categories}/${categoryId}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    return response.ok;
+  } catch (error) {
+    console.error('Failed to delete newsletter category.', error);
+    return false;
+  }
+};
+
 export const fetchNewslettersByStatus = async (
   status?: NewsletterStatus
 ): Promise<NewsletterResponse[]> => {
@@ -415,6 +503,104 @@ export const updateLecteurCategories = async (
     return data;
   } catch (error) {
     console.error('Failed to update lecteur categories.', error);
+    return null;
+  }
+};
+
+export const fetchRedacteurRequests = async (): Promise<
+  RedacteurRequestResponse[]
+> => {
+  if (!BASE_URL_NEWSLETTER_API) {
+    console.error('Missing NEXT_PUBLIC_NEWSLETTER_API.');
+    return [];
+  }
+
+  try {
+    const response = await fetch(NewsletterServiceRoutes.redacteursAdminRequests, {
+      method: 'GET',
+    });
+    const data = (await resolvePayload(response)) as
+      | RedacteurRequestResponse[]
+      | null;
+    if (!response.ok || !Array.isArray(data)) {
+      return [];
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch redacteur requests.', error);
+    return [];
+  }
+};
+
+export const approveRedacteurRequest = async (
+  requestId: string
+): Promise<RedacteurRequestResponse | null> => {
+  if (!BASE_URL_NEWSLETTER_API) {
+    console.error('Missing NEXT_PUBLIC_NEWSLETTER_API.');
+    return null;
+  }
+
+  if (!requestId) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `${NewsletterServiceRoutes.redacteursAdminRequests}/${requestId}/approve`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      }
+    );
+    const data = (await resolvePayload(response)) as
+      | RedacteurRequestResponse
+      | null;
+    if (!response.ok || !data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to approve redacteur request.', error);
+    return null;
+  }
+};
+
+export const rejectRedacteurRequest = async (
+  requestId: string,
+  reason: string
+): Promise<RedacteurRequestResponse | null> => {
+  if (!BASE_URL_NEWSLETTER_API) {
+    console.error('Missing NEXT_PUBLIC_NEWSLETTER_API.');
+    return null;
+  }
+
+  if (!requestId) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `${NewsletterServiceRoutes.redacteursAdminRequests}/${requestId}/reject`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reason }),
+      }
+    );
+    const data = (await resolvePayload(response)) as
+      | RedacteurRequestResponse
+      | null;
+    if (!response.ok || !data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to reject redacteur request.', error);
     return null;
   }
 };

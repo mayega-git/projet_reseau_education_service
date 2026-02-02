@@ -9,6 +9,20 @@ export async function POST() {
   console.log('📝 [API Route /init] Backend URL:', BACKEND_URL);
   console.log('🔑 [API Route /init] API Key:', API_KEY ? '✓ Present' : '✗ Missing');
   console.log('🆔 [API Route /init] Client ID:', CLIENT_ID);
+  if (!BACKEND_URL || !API_KEY || !CLIENT_ID) {
+    console.error('❌ [API Route /init] Missing auth configuration env vars');
+    return NextResponse.json(
+      {
+        error: 'Missing auth configuration',
+        missing: {
+          NEXT_PUBLIC_GATEWAY_URL: !BACKEND_URL,
+          API_KEY: !API_KEY,
+          NEXT_PUBLIC_CLIENT_ID: !CLIENT_ID,
+        },
+      },
+      { status: 500 }
+    );
+  }
   try {
     const response = await fetch(`${BACKEND_URL}/apikeygateway/generateFirstConnection/token`, {
       method: 'POST',

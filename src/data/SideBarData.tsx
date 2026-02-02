@@ -201,6 +201,20 @@ export const SideBarData = [
     subnav: [],
   },
   {
+    title: 'Redacteurs',
+    url: `/u/manage/newsletter/redacteurs`,
+    role: [AppRoles.SUPER_ADMIN, AppRoles.ADMIN],
+    icon: Mail,
+    subnav: [],
+  },
+  {
+    title: 'Newsletter Categories',
+    url: `/u/newsletter/categories/manage`,
+    role: [AppRoles.SUPER_ADMIN, AppRoles.ADMIN],
+    icon: Mail,
+    subnav: [],
+  },
+  {
     title: 'NewsLetter',
     url: `/u/newsletter`,
     role: [AppRoles.AUTHOR],

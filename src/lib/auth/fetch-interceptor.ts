@@ -76,7 +76,12 @@ async function initializeAuth() {
       if (response.ok) {
         console.log('✅ [Fetch Interceptor] Initial token obtained successfully');
       } else {
-        console.error('❌ [Fetch Interceptor] Failed to obtain initial token:', response.status);
+        const errorText = await response.text().catch(() => '');
+        console.error(
+          '❌ [Fetch Interceptor] Failed to obtain initial token:',
+          response.status,
+          errorText
+        );
       }
     } else {
       console.log('✅ [Fetch Interceptor] Existing token found, skipping init');

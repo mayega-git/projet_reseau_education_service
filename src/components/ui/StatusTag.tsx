@@ -39,6 +39,15 @@ const StatusTag: React.FC<StatusTagProps> = ({ status }) => {
     case 'VALIDEE':
       statusColor = 'bg-emerald-500 text-white';
       break;
+    case 'PENDING':
+      statusColor = 'bg-yellow-500 text-white';
+      break;
+    case 'APPROVED':
+      statusColor = 'bg-green-500 text-white';
+      break;
+    case 'REJECTED':
+      statusColor = 'bg-red-500 text-white';
+      break;
     default:
       statusColor = 'bg-gray-300 text-gray-700';
   }
