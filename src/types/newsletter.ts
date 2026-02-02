@@ -33,7 +33,26 @@ export interface LecteurRegistrationRequest {
   email: string;
   nom: string;
   prenom: string;
-  password?: string;
+}
+
+export type RedacteurRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface RedacteurRequestSubmission {
+  email?: string | null;
+  nom?: string | null;
+  prenom?: string | null;
+  password?: string | null;
+}
+
+export interface RedacteurRequestResponse {
+  id?: string | null;
+  email?: string | null;
+  nom?: string | null;
+  prenom?: string | null;
+  status?: RedacteurRequestStatus | null;
+  createdAt?: string | null;
+  processedAt?: string | null;
+  rejectionReason?: string | null;
 }
 
 export interface LecteurResponse {

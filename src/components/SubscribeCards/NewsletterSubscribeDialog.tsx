@@ -27,10 +27,6 @@ const schema = yup.object().shape({
   email: yup.string().email('Email invalide').required('Email requis'),
   firstName: yup.string().required('First Name requis'),
   lastName: yup.string().required('Last Name requis'),
-  password: yup
-    .string()
-    .required('Password requis')
-    .min(6, 'Password doit contenir au moins 6 caracteres'),
 });
 
 type FormData = yup.InferType<typeof schema>;
@@ -67,7 +63,6 @@ const NewsletterSubscribeDialog = ({
       email: '',
       firstName: '',
       lastName: '',
-      password: '',
     },
   });
 
@@ -94,7 +89,6 @@ const NewsletterSubscribeDialog = ({
       email: derivedEmail,
       firstName: user?.firstName ?? '',
       lastName: user?.lastName ?? '',
-      password: '',
     });
   }, [open, derivedEmail, reset, user?.firstName, user?.lastName]);
 
@@ -122,16 +116,10 @@ const NewsletterSubscribeDialog = ({
   }, [open, categories.length, categoriesLoading]);
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    if (!derivedEmail) {
-      GlobalNotifier('Connecte-toi pour continuer.', 'warning');
-      return;
-    }
-
     const lecteur = await registerLecteur({
       email: data.email,
       nom: data.lastName,
       prenom: data.firstName,
-      password: data.password,
     });
 
     if (!lecteur?.id) {
@@ -257,11 +245,12 @@ const NewsletterSubscribeDialog = ({
                   <input
                     id="email"
                     type="email"
-                    readOnly
                     className={cn(
-                      'custom-input bg-gray-100',
+                      'custom-input',
+                      user?.sub ? 'bg-gray-100' : '',
                       errors.email ? 'border-red-500' : 'border-gray-300'
                     )}
+                    readOnly={Boolean(user?.sub)}
                     {...register('email')}
                   />
                   {errors.email && (
@@ -313,36 +302,10 @@ const NewsletterSubscribeDialog = ({
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="password" className="form-label">
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    className={cn(
-                      'custom-input',
-                      errors.password ? 'border-red-500' : 'border-gray-300'
-                    )}
-                    {...register('password')}
-                  />
-                  {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
-
-                {!derivedEmail && (
-                  <p className="text-amber-600 text-sm">
-                    Connecte-toi pour recuperer ton email.
-                  </p>
-                )}
-
                 <DialogFooter className="pt-2">
                   <Button
                     type="submit"
-                    disabled={isSubmitting || !derivedEmail}
+                    disabled={isSubmitting}
                   >
                     Continuer
                   </Button>

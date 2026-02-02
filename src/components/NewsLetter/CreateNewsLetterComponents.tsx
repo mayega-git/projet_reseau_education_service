@@ -15,6 +15,7 @@ import {
   submitNewsletter,
   updateNewsletter,
 } from '@/lib/FetchNewsletterData';
+import { useRedacteurAccess } from '@/hooks/use-redacteur-access';
 import type {
   NewsletterCategory,
   NewsletterCreateRequest,
@@ -49,6 +50,7 @@ const buildEditorStateFromContent = (content?: string | null) => {
   try {
     const raw = JSON.parse(content);
     return EditorState.createWithContent(convertFromRaw(raw));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return EditorState.createWithContent(ContentState.createFromText(content));
   }
@@ -61,6 +63,7 @@ const CreateNewsLetterComponents = ({
 }: CreateNewsLetterComponentsProps) => {
   const { user } = useAuth();
   const router = useRouter();
+  const { hasAccess, loading: accessLoading } = useRedacteurAccess();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -204,6 +207,30 @@ const CreateNewsLetterComponents = ({
     GlobalNotifier('Newsletter soumise.', 'success');
     onUpdated?.();
   };
+
+  if (accessLoading) {
+    return (
+      <p className="paragraph-medium-normal text-black-300">
+        Verification de l&apos;acces...
+      </p>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="rounded-xl border border-grey-200 bg-white p-6 space-y-4">
+        <div>
+          <p className="h4-medium">Acces redacteur requis</p>
+          <p className="paragraph-medium-normal text-black-300 mt-2">
+            Complete ta demande redacteur pour creer ou modifier une newsletter.
+          </p>
+        </div>
+        <Button type="button" onClick={() => router.push('/u/newsletter')}>
+          Devenir redacteur
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8">

@@ -9,6 +9,8 @@ import type {
   NewsletterCreateRequest,
   NewsletterResponse,
   NewsletterStatus,
+  RedacteurRequestResponse,
+  RedacteurRequestSubmission,
 } from '@/types/newsletter';
 
 const resolvePayload = async (response: Response) => {
@@ -317,6 +319,67 @@ export const registerLecteur = async (
     return data;
   } catch (error) {
     console.error('Failed to register lecteur.', error);
+    return null;
+  }
+};
+
+export const submitRedacteurRequest = async (
+  payload: RedacteurRequestSubmission
+): Promise<RedacteurRequestResponse | null> => {
+  if (!BASE_URL_NEWSLETTER_API) {
+    console.error('Missing NEXT_PUBLIC_NEWSLETTER_API.');
+    return null;
+  }
+
+  try {
+    const response = await fetch(NewsletterServiceRoutes.redacteurRequest, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = (await resolvePayload(response)) as
+      | RedacteurRequestResponse
+      | null;
+    if (!response.ok || !data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to submit redacteur request.', error);
+    return null;
+  }
+};
+
+export const fetchRedacteurRequestStatus = async (
+  requestId: string
+): Promise<RedacteurRequestResponse | null> => {
+  if (!BASE_URL_NEWSLETTER_API) {
+    console.error('Missing NEXT_PUBLIC_NEWSLETTER_API.');
+    return null;
+  }
+
+  if (!requestId) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `${NewsletterServiceRoutes.redacteurRequest}/${requestId}`,
+      {
+        method: 'GET',
+      }
+    );
+    const data = (await resolvePayload(response)) as
+      | RedacteurRequestResponse
+      | null;
+    if (!response.ok || !data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch redacteur request status.', error);
     return null;
   }
 };

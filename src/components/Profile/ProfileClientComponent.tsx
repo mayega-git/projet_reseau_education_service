@@ -62,6 +62,10 @@ export default function ProfileClientComponent({
 
   //get current loggedIn user
   const { user, role } = useAuth();
+  const isRedacteur =
+    role?.includes(AppRoles.SUPER_ADMIN) ||
+    role?.includes(AppRoles.ADMIN) ||
+    role?.includes(AppRoles.AUTHOR);
 
   // Check if the logged-in user is viewing their own profile
   const isCurrentUserProfile = user?.id === userData.id;
@@ -328,11 +332,20 @@ export default function ProfileClientComponent({
                         Modifie les categories pour recevoir les newsletters
                         qui t'interessent.
                       </p>
-                      <Link href="/newsletter/categories">
-                        <Button variant="outline" className="mt-3">
-                          Editer mes categories
-                        </Button>
-                      </Link>
+                      <div className="flex flex-wrap gap-3 mt-3">
+                        <Link href="/newsletter/categories">
+                          <Button variant="outline">
+                            Editer mes categories
+                          </Button>
+                        </Link>
+                        <Link href="/u/newsletter">
+                          <Button variant={isRedacteur ? 'outline' : 'gradientOrange'}>
+                            {isRedacteur
+                              ? 'Acceder aux newsletters'
+                              : 'Devenir redacteur'}
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 )}
