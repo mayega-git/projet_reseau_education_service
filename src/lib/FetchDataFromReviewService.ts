@@ -6,28 +6,38 @@ import {
   ReplyCommentInterface,
   ReplyCommentResponseInterface,
 } from '@/types/comment';
-import { ReviewServiceRoutes, UserServiceRoutes } from './api';
-import { fetchData, postData } from './helperAPIMethods';
+
+// Server Actions imports
+import {
+  fetchAllLikesForEntityId as fetchAllLikesForEntityIdAction,
+  fetchAllDislikesForEntityId as fetchAllDislikesForEntityIdAction,
+  fetchHasLikedStatusByUserId as fetchHasLikedStatusByUserIdAction,
+  fetchHasDislikedStatusByUserId as fetchHasDislikedStatusByUserIdAction,
+  fetchAllCommentsByEntityId as fetchAllCommentsByEntityIdAction,
+  createComment as createCommentAction,
+  replyComment as replyCommentAction,
+  fetchAllCommentsRepliesForCommentId as fetchAllCommentsRepliesForCommentIdAction,
+  likeOrDislikeEntity as likeOrDislikeEntityAction,
+} from '@/actions/review';
 
 // Fetch total likes for an entity
 export const fetchAllLikesForEntityId = async (entityId: string) => {
-  const params = new URLSearchParams({ entityId }).toString();
-
-  const url = `${ReviewServiceRoutes.ratings}/totalLikes?${params}`;
-  console.log("➡️ URL transmise à fetchData pour les totallikes: "+url);
-  
-  return fetchData<number>(url);
+  try {
+    return await fetchAllLikesForEntityIdAction(entityId);
+  } catch (error) {
+    console.error('Failed to fetch total likes', error);
+    return null;
+  }
 };
 
 // Fetch total dislikes for an entity
 export const fetchAllDislikesForEntityId = async (entityId: string) => {
-  
-  const params = new URLSearchParams({ entityId }).toString();
-
-  const url = `${ReviewServiceRoutes.ratings}/totalDislikes?${params}`;
-  console.log("➡️ URL transmise à fetchData pour les totalDislikes: "+url);
-  
-  return fetchData<number>(url);
+  try {
+    return await fetchAllDislikesForEntityIdAction(entityId);
+  } catch (error) {
+    console.error('Failed to fetch total dislikes', error);
+    return null;
+  }
 };
 
 // Fetch "has liked" status by userId and entityId
@@ -35,11 +45,12 @@ export const fetchHasLikedStatusByUserId = async (
   userId: string,
   entityId: string
 ) => {
-  const url = new URL(`${ReviewServiceRoutes.ratings}/hasLiked`);
-  url.searchParams.set('userId', userId);
-  url.searchParams.set('entityId', entityId);
-
-  return fetchData<boolean>(url.toString());
+  try {
+    return await fetchHasLikedStatusByUserIdAction(userId, entityId);
+  } catch (error) {
+    console.error('Failed to fetch has liked status', error);
+    return false;
+  }
 };
 
 // Fetch "has disliked" status by userId and entityId
@@ -47,68 +58,62 @@ export const fetchHasDislikedStatusByUserId = async (
   userId: string,
   entityId: string
 ) => {
-  const url = new URL(`${ReviewServiceRoutes.ratings}/hasDisliked`);
-  url.searchParams.set('userId', userId);
-  url.searchParams.set('entityId', entityId);
-
-  return fetchData<boolean>(url.toString());
+  try {
+    return await fetchHasDislikedStatusByUserIdAction(userId, entityId);
+  } catch (error) {
+    console.error('Failed to fetch has disliked status', error);
+    return false;
+  }
 };
 
 // Fetch all comments on an entity ID
 export const fetchAllCommentsByEntityId = async (entityId: string) => {
-  const params = new URLSearchParams({ entityId }).toString();
-
-  const url = `${ReviewServiceRoutes.comments}/by-entityId?${params}`;
-  console.log("➡️ URL transmise à fetchData pour les comments d'un entityId: "+url);
-  
-  return fetchData<GetCommentInteface[]>(url);
+  try {
+    return await fetchAllCommentsByEntityIdAction(entityId);
+  } catch (error) {
+    console.error('Failed to fetch comments', error);
+    return [];
+  }
 };
 
 // Function to create a comment
 export const createComment = async (commentData: CreateCommentInterface) => {
-  return postData<CreateCommentInterface, GetCommentInteface>(
-    `${ReviewServiceRoutes.comments}`,
-    commentData
-  );
+  try {
+    return await createCommentAction(commentData);
+  } catch (error) {
+    console.error('Failed to create comment', error);
+    return null;
+  }
 };
 
 // Function to reply to a comment
 export const replyComment = async (replyCommentData: ReplyCommentInterface) => {
-  return postData<ReplyCommentInterface, ReplyCommentResponseInterface>(
-    `${ReviewServiceRoutes.commentReply}/${replyCommentData.commentId}`,
-    replyCommentData
-  );
+  try {
+    return await replyCommentAction(replyCommentData);
+  } catch (error) {
+    console.error('Failed to reply comment', error);
+    return null;
+  }
 };
 
 // Fetch all comment replies on an comment ID
 export const fetchAllCommentsRepliesForCommentId = async (
   commentId: string
 ) => {
-  return fetchData<ReplyCommentResponseInterface[]>(
-    `${ReviewServiceRoutes.commentReply}/${commentId}`
-  );
+  try {
+    return await fetchAllCommentsRepliesForCommentIdAction(commentId);
+  } catch (error) {
+    console.error('Failed to fetch comment replies', error);
+    return [];
+  }
 };
 
 //function to like or dislike entity
 export const likeOrDislikeEntity = async (params: LikeDislikeRequest) => {
-  const url = new URL(`${ReviewServiceRoutes.ratings}/like-or-dislike`);
-  url.searchParams.set('userId', params.userId);
-  url.searchParams.set('entityId', params.entityId);
-  url.searchParams.set('entityType', params.entityType);
-  url.searchParams.set('isLike', params.isLike.toString());
-
   try {
-    const response = await fetch(url.toString(), {
-      method: 'POST',
-    });
-
-    if (response.ok) {
-      return await response.json();
-    } else {
-      console.error(`Failed to like/dislike entity: ${response.status}`);
-      return null;
-    }
+    return await likeOrDislikeEntityAction(params);
   } catch (error) {
-    console.error('Error making POST request', error);
+    console.error('Error making POST request for like/dislike', error);
+    return null;
   }
 };

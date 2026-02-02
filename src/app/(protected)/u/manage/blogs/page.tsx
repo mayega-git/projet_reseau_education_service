@@ -2,12 +2,12 @@
 import BlogAndPodcastDataTable from '@/components/DataTable/BlogAndPodcastDataTable';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
-import { getAllBlogs } from '@/lib/fetchers/blog';
+import { getAllBlogsEverCreated } from '@/lib/fetchers/blog';
 import { fetchAllUsers } from '@/lib/fetchers/user';
 import React from 'react';
 
 const ManageBlogs = async () => {
-  const allBlogs = await getAllBlogs();
+  const allBlogs = await getAllBlogsEverCreated();
 
   if (!allBlogs || allBlogs.length === 0) {
     return (

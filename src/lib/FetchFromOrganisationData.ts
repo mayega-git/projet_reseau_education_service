@@ -1,8 +1,11 @@
 import { GetOrganisation } from '@/types/organisation';
-import { OrganisationServiceRoutes } from './api';
-import { fetchData } from './helperAPIMethods';
+import { fetchAllOrganisations as fetchAllOrganisationsAction } from '@/actions/organisation';
 
 export const fetchAllOrganisations = async (): Promise<GetOrganisation[]> => {
-  const url = new URL(OrganisationServiceRoutes.organisation);
-  return (await fetchData<GetOrganisation[]>(url.toString())) || [];
+  try {
+    return await fetchAllOrganisationsAction();
+  } catch (error) {
+    console.error('Failed to fetch organisations', error);
+    return [];
+  }
 };

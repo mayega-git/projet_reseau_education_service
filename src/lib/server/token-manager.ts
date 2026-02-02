@@ -8,6 +8,9 @@ import { ServiceURLs } from './services';
 const API_KEY = process.env.API_KEY ?? '';
 const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID ?? '';
 
+// Token lifetime in milliseconds (1 hour)
+export const TOKEN_LIFETIME_MS = 60 * 60 * 1000;
+
 export interface TokenPair {
   accessToken: string;
   refreshToken: string;
@@ -38,6 +41,11 @@ export async function initGatewayToken(): Promise<TokenPair | null> {
     }
 
     const data = await res.json();
+    console.log('[token-manager] init: Raw data received', {
+      hasAccessToken: !!(data.access_token ?? data.accessToken),
+      hasRefreshToken: !!(data.refresh_token ?? data.refreshToken),
+    });
+
     const accessToken: string = data.access_token ?? data.accessToken ?? '';
     const refreshToken: string = data.refresh_token ?? data.refreshToken ?? '';
 
@@ -46,6 +54,7 @@ export async function initGatewayToken(): Promise<TokenPair | null> {
       return null;
     }
 
+    console.log('[token-manager] init: SUCCESS. Tokens obtained.');
     return { accessToken, refreshToken };
   } catch (err) {
     console.error('[token-manager] init exception:', err);
@@ -78,6 +87,11 @@ export async function refreshGatewayToken(
     }
 
     const data = await res.json();
+    console.log('[token-manager] refresh: Raw data received', {
+      hasAccessToken: !!(data.accessToken ?? data.access_token),
+      hasRefreshToken: !!(data.refreshToken ?? data.refresh_token),
+    });
+
     const accessToken: string = data.accessToken ?? data.access_token ?? '';
     const refreshToken: string = data.refreshToken ?? data.refresh_token ?? '';
 
@@ -86,6 +100,7 @@ export async function refreshGatewayToken(
       return null;
     }
 
+    console.log('[token-manager] refresh: SUCCESS. New access token obtained.');
     return { accessToken, refreshToken: refreshToken || currentRefreshToken };
   } catch (err) {
     console.error('[token-manager] refresh exception:', err);
@@ -96,14 +111,30 @@ export async function refreshGatewayToken(
 /**
  * Decode a JWT payload without verification (for reading `exp`).
  * Returns null on any parsing error.
+ * Uses atob() for Edge Runtime compatibility.
  */
 export function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = Buffer.from(parts[1], 'base64url').toString('utf-8');
-    return JSON.parse(payload);
-  } catch {
+    if (parts.length !== 3) {
+      console.error('[token-manager] JWT decode error: Token does not have 3 parts (header.payload.signature)');
+      return null;
+    }
+    
+    // Convert base64url to base64, then decode
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    
+    const payload = JSON.parse(jsonPayload);
+    // console.log('[token-manager] Decoded payload:', payload); // Uncomment to see full payload
+    return payload;
+  } catch (err) {
+    console.error('[token-manager] JWT decode exception:', err);
     return null;
   }
 }
@@ -113,6 +144,27 @@ export function decodeJwtPayload(token: string): Record<string, unknown> | null 
  */
 export function isTokenExpiringSoon(token: string, marginMs = 60_000): boolean {
   const payload = decodeJwtPayload(token);
-  if (!payload || typeof payload.exp !== 'number') return true; // treat as expired
-  return payload.exp * 1000 < Date.now() + marginMs;
+  
+  if (!payload || typeof payload.exp !== 'number') {
+    console.log('[token-manager] isTokenExpiringSoon: Invalid payload or NO exp claim:', { 
+      hasPayload: !!payload, 
+      exp: payload?.exp 
+    });
+    return true; // treat as expired
+  }
+  
+  const expiresAt = new Date(payload.exp * 1000);
+  const now = Date.now();
+  const timeLeftMs = payload.exp * 1000 - now;
+  const timeLeftMinutes = (timeLeftMs / 60000).toFixed(2);
+  
+  // Log every check to debug the loop
+  console.log('[token-manager] Token Check:', {
+    expiresAt: expiresAt.toISOString(),
+    now: new Date(now).toISOString(),
+    timeLeftMinutes: `${timeLeftMinutes} min`,
+    isExpiringSoon: timeLeftMs < marginMs
+  });
+  
+  return timeLeftMs < marginMs;
 }

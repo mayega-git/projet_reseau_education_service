@@ -19,22 +19,14 @@ import { MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { revalidateTag } from 'next/cache';
 
+import { fetchAllTags as fetchAllTagsAction } from '@/actions/education';
+
 async function fetchAllTags(): Promise<TagInterface[]> {
   try {
-    const response = await fetch(`${EducationRoutes.tags}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      next: { tags: ['tags'] }, // Caches for 60 seconds for better performance
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch tags');
-    }
-
-    return response.json();
+    return (await fetchAllTagsAction()) as TagInterface[];
   } catch (err) {
     console.error('Error fetching tags:', err);
-    return []; // Return an empty array to avoid blocking
+    return [];
   }
 }
 

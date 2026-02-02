@@ -4,6 +4,7 @@ import React from 'react';
 import { Suspense } from 'react';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import { EducationRoutes } from '@/lib/server/services';
+import { authFetchJson } from '@/lib/server/auth-fetch';
 import { TagInterface } from '@/types/tag';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/DataTable/DataTableDisplay';
@@ -24,19 +25,12 @@ import { revalidateTag } from 'next/cache';
 
 async function fetchAllCategories(): Promise<TagInterface[]> {
   try {
-    const response = await fetch(`${EducationRoutes.category}`, {
+    const categories = await authFetchJson<TagInterface[]>(`${EducationRoutes.category}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
       next: { tags: ['categories'] }, // Caches for 60 seconds for better performance
     });
 
-    console.log(response);
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch tags');
-    }
-
-    return response.json();
+    return categories || [];
   } catch (err) {
     console.error('Error fetching tags:', err);
     return []; // Return an empty array to avoid blocking

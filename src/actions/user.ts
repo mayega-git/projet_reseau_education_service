@@ -16,6 +16,7 @@ import {
   assignRole,
   deleteUser,
   updateUserRoles,
+  updateUser,
 } from '@/lib/fetchers/user';
 import type { UserWithBlogCount } from '@/lib/fetchers/user';
 
@@ -34,4 +35,5 @@ export {
   assignRole,
   deleteUser,
   updateUserRoles,
+  updateUser,
 };

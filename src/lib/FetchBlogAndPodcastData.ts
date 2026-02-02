@@ -1,17 +1,35 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { BlogInterface } from '@/types/blog';
-import { EducationServiceRoutes, UserServiceRoutes } from './api';
 import { PodcastInterface } from '@/types/podcast';
-import { GetUser, User } from '@/types/User';
-import { fetchData } from './helperAPIMethods';
-import { fetchBinaryData } from './helperAPIMethods';
+
+// Server Actions imports
+import {
+  getAllBlogsEverCreated as getAllBlogsEverCreatedAction,
+  getAllBlogs as getAllBlogsAction,
+  getAllBlogsByAuthorId as getAllBlogsByAuthorIdAction,
+  fetchBlogById as fetchBlogByIdAction,
+  getAllPodcastsEverCreated as getAllPodcastsEverCreatedAction,
+  getAllPodcasts as getAllPodcastsAction,
+  getAllPodcastsByAuthorId as getAllPodcastsByAuthorIdAction,
+  fetchPodcastById as fetchPodcastByIdAction,
+  getBlogImages as getBlogImagesAction,
+  getPodcastImages as getPodcastImagesAction,
+  fetchBlogImage as fetchBlogImageAction,
+  fetchPodcastImage as fetchPodcastImageAction,
+  fetchBlogAudio as fetchBlogAudioAction,
+  fetchPodcastAudio as fetchPodcastAudioAction,
+} from '@/actions/blog';
 
 /**
  * Fetch all blogs ever created
  */
 export const getAllBlogsEverCreated = async (): Promise<BlogInterface[]> => {
-  const url = new URL(EducationServiceRoutes.blogs).toString();
-  return (await fetchData<BlogInterface[]>(url)) || [];
+  try {
+    return await getAllBlogsEverCreatedAction();
+  } catch (error) {
+    console.error('Failed to get all blogs ever created', error);
+    return [];
+  }
 };
 
 /**
@@ -20,18 +38,25 @@ export const getAllBlogsEverCreated = async (): Promise<BlogInterface[]> => {
 export const getAllPodcastsEverCreated = async (): Promise<
   PodcastInterface[]
 > => {
-  const url = new URL(EducationServiceRoutes.podcasts).toString();
-  return (await fetchData<PodcastInterface[]>(url)) || [];
+  try {
+    return await getAllPodcastsEverCreatedAction();
+  } catch (error) {
+    console.error('Failed to get all podcasts ever created', error);
+    return [];
+  }
 };
 
 /**
  * Fetch all blogs based on status
  * @param {string} status - The status of blogs to fetch
  */
-export const getAllBlogs = async (status: string,): Promise<BlogInterface[]> => {
-  const url = new URL(`${EducationServiceRoutes.blogs}/published`);
-  url.searchParams.set('status', status);
-  return (await fetchData<BlogInterface[]>(url.toString())) || [];
+export const getAllBlogs = async (status: string): Promise<BlogInterface[]> => {
+  try {
+    return await getAllBlogsAction(status);
+  } catch (error) {
+    console.error('Failed to get all blogs by status', error);
+    return [];
+  }
 };
 
 /**
@@ -42,12 +67,12 @@ export const getAllBlogsByAuthorId = async (
   authorId: string,
   status: string
 ): Promise<BlogInterface[]> => {
-  const url = new URL(EducationServiceRoutes.blogs);
-  url.searchParams.set('authorId', authorId);
-  if (status !== '') {
-    url.searchParams.set('status', status);
+  try {
+    return await getAllBlogsByAuthorIdAction(authorId, status);
+  } catch (error) {
+    console.error('Failed to get all blogs by author', error);
+    return [];
   }
-  return (await fetchData<BlogInterface[]>(url.toString())) || [];
 };
 
 /**
@@ -57,9 +82,12 @@ export const getAllBlogsByAuthorId = async (
 export const getAllPodcasts = async (
   status: string
 ): Promise<PodcastInterface[]> => {
-  const url = new URL(EducationServiceRoutes.podcasts);
-  url.searchParams.set('status', status);
-  return (await fetchData<PodcastInterface[]>(url.toString())) || [];
+  try {
+    return await getAllPodcastsAction(status);
+  } catch (error) {
+    console.error('Failed to get all podcasts by status', error);
+    return [];
+  }
 };
 
 /**
@@ -70,12 +98,12 @@ export const getAllPodcastsByAuthorId = async (
   authorId: string,
   status: string
 ): Promise<PodcastInterface[]> => {
-  const url = new URL(EducationServiceRoutes.podcasts);
-  url.searchParams.set('authorId', authorId);
-  if (status !== '') {
-    url.searchParams.set('status', status);
+  try {
+    return await getAllPodcastsByAuthorIdAction(authorId, status);
+  } catch (error) {
+    console.error('Failed to get all podcasts by author', error);
+    return [];
   }
-  return (await fetchData<PodcastInterface[]>(url.toString())) || [];
 };
 
 /**
@@ -85,25 +113,12 @@ export const getAllPodcastsByAuthorId = async (
 export const fetchBlogById = async (
   id: string
 ): Promise<BlogInterface | null> => {
-
-  const blogUrl = `${EducationServiceRoutes.blogs}/${id}`;
-  const tagsUrl = `${EducationServiceRoutes.blogs}/${id}/tags`;
-  const categoriesUrl = `${EducationServiceRoutes.blogs}/${id}/categories`;
-
-  // ⚡ Exécute les 3 appels en parallèle
-  const [blog, tags, categories] = await Promise.all([
-    fetchData<BlogInterface>(blogUrl),
-    fetchData<string[]>(tagsUrl),
-    fetchData<string[]>(categoriesUrl)
-  ]);
-
-  if (!blog) return null;
-
-  return {
-    ...blog,
-    tags: tags ?? [],
-    category: categories ?? []
-  };
+  try {
+    return await fetchBlogByIdAction(id);
+  } catch (error) {
+    console.error('Failed to fetch blog by id', error);
+    return null;
+  }
 };
 
 
@@ -114,8 +129,12 @@ export const fetchBlogById = async (
 export const fetchPodcastById = async (
   id: string
 ): Promise<PodcastInterface | null> => {
-  const url = new URL(`${EducationServiceRoutes.podcasts}/${id}`).toString();
-  return await fetchData<PodcastInterface>(url);
+  try {
+    return await fetchPodcastByIdAction(id);
+  } catch (error) {
+    console.error('Failed to fetch podcast by id', error);
+    return null;
+  }
 };
 
 /**
@@ -123,22 +142,12 @@ export const fetchPodcastById = async (
  * @param {BlogInterface[]} blogs - The blog ID
  */
 export const fetchBlogImages = async (blogs: BlogInterface[]) => {
-  const imageMap: { [key: string]: number[] } = {};
-
-  await Promise.all(
-    blogs.map(async (blog) => {
-      try {
-        const imageData = await fetchBinaryData(
-          `${EducationServiceRoutes.blogs}/${blog.id}/coverblog`
-        );
-        imageMap[blog.id] = imageData;
-      } catch (err) {
-        console.error('Error fetching image for blog ${blog.id}:', err);
-      }
-    })
-  );
-
-  return imageMap;
+  try {
+    return await getBlogImagesAction(blogs);
+  } catch (error) {
+    console.error('Failed to fetch blog images', error);
+    return {};
+  }
 };
 
 /**
@@ -146,83 +155,49 @@ export const fetchBlogImages = async (blogs: BlogInterface[]) => {
  * @param {PodcastInterface[]} podcasts - The blog ID
  */
 export const fetchPodcastImages = async (podcasts: PodcastInterface[]) => {
-  const imageMap: { [key: string]: number[] } = {};
-
-  await Promise.all(
-    podcasts.map(async (podcast) => {
-      try {
-        const imageData = await fetchBinaryData(
-          `${EducationServiceRoutes.podcasts}/${podcast.id}/stream-coverImage`
-        );
-        imageMap[podcast.id] = imageData;
-      } catch (err) {
-        console.error(`Error fetching image for podcast ${podcast.id}:`, err);
-      }
-    })
-  );
-
-  return imageMap;
+  try {
+    return await getPodcastImagesAction(podcasts);
+  } catch (error) {
+    console.error('Failed to fetch podcast images', error);
+    return {};
+  }
 };
 
 //fetch single blog image
 export const fetchBlogImage = async (blogId: string) => {
-  const imageMap: { [key: string]: number[] } = {};
-
   try {
-    const imageData = await fetchBinaryData(
-      `${EducationServiceRoutes.blogs}/${blogId}/coverblog`
-    );
-    imageMap[blogId] = imageData;
-  } catch (err) {
-    console.error(`Error fetching image for blog ${blogId}:`, err);
+    return await fetchBlogImageAction(blogId);
+  } catch (error) {
+    console.error('Failed to fetch blog image', error);
+    return {};
   }
-
-  return imageMap;
 };
 
 export const fetchPodcastImage = async (podcastId: string) => {
-  const imageMap: { [key: string]: number[] } = {};
-
   try {
-    const imageData = await fetchBinaryData(
-      `${EducationServiceRoutes.podcasts}/${podcastId}/stream-coverImage`
-    );
-    imageMap[podcastId] = imageData;
-  } catch (err) {
-    console.error(`Error fetching image for podcast ${podcastId}:`, err);
+    return await fetchPodcastImageAction(podcastId);
+  } catch (error) {
+    console.error('Failed to fetch podcast image', error);
+    return {};
   }
-
-  return imageMap;
 };
 
 // function to fetch blog audio
 export const fetchBlogAudio = async (blogId: string) => {
-  const audioMap: { [key: string]: number[] } = {};
-
   try {
-    const audioData = await fetchBinaryData(
-      `${EducationServiceRoutes.blogs}/${blogId}/audio`
-    );
-    audioMap[blogId] = audioData;
-  } catch (err) {
-    console.error(`Error fetching audio for blog ${blogId}:`, err);
+    return await fetchBlogAudioAction(blogId);
+  } catch (error) {
+    console.error('Failed to fetch blog audio', error);
+    return {};
   }
-
-  return audioMap;
 };
 
 // function to fetch blog audio
 export const fetchPodcastAudio = async (podcastId: string) => {
-  const audioMap: { [key: string]: number[] } = {};
-
   try {
-    const audioData = await fetchBinaryData(
-      `${EducationServiceRoutes.podcasts}/${podcastId}/stream`
-    );
-    audioMap[podcastId] = audioData;
-  } catch (err) {
-    console.error(`Error fetching audio for podcast ${podcastId}:`, err);
+    return await fetchPodcastAudioAction(podcastId);
+  } catch (error) {
+    console.error('Failed to fetch podcast audio', error);
+    return {};
   }
-
-  return audioMap;
 };

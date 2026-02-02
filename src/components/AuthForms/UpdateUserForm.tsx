@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { UserRoutes } from '@/lib/server/services';
 import TextArea from '../ui/textarea';
 import { GlobalNotifier } from '../ui/GlobalNotifier';
+import { updateUser } from '@/actions/user';
 
 interface Errors {
   email: string;
@@ -83,30 +84,32 @@ const UpdateUserForm = () => {
     if (!validateForm()) return;
 
     // If no errors, proceed with form submission
+    // If no errors, proceed with form submission
     try {
-      const response = await fetch(`${UserServiceRoutes.update}/${user?.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      if (!user?.id) throw new Error('User ID missing');
+      
+      const payload = {
           email: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,
-          password: formData.password,
-          role: role && role,
-        }),
-      });
+          password: formData.password || undefined, // Only send if set
+          role: role ?? undefined,
+      };
 
-      const data = await response.json();
-      if (response.ok) {
+      const updatedUser = await updateUser(user.id, payload);
+
+      if (updatedUser) {
         GlobalNotifier('User updated successfully', 'success');
-        login(data.data.token); // Store token in AuthContext and localStorage
+        // Reload to ensure everything is fresh and context is updated from server
+        window.location.reload(); 
       } else {
-        alert(data.message); // Handle failed signup
-        console.log(data);
+         GlobalNotifier('Failed to update user', 'error');
+         setError({ form: 'Failed to update user' });
       }
+
     } catch (error) {
       console.error('Signup error:', error);
-      alert('An error occurred during signup');
+      alert('An error occurred during update');
     }
   };
 

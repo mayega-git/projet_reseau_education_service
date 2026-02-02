@@ -22,24 +22,14 @@ import { Button } from '@/components/ui/button';
 import CreateDialogWrapperCategories from '@/components/Categories/CreateDialogWrapperCategories';
 import { revalidateTag } from 'next/cache';
 
+import { fetchAllCategories as fetchAllCategoriesAction } from '@/actions/education';
+
 async function fetchAllCategories(): Promise<TagInterface[]> {
   try {
-    const response = await fetch(`${EducationRoutes.category}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      next: { tags: ['categories'] }, // Caches for 60 seconds for better performance
-    });
-
-    console.log(response);
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch tags');
-    }
-
-    return response.json();
+    return (await fetchAllCategoriesAction()) as TagInterface[];
   } catch (err) {
-    console.error('Error fetching tags:', err);
-    return []; // Return an empty array to avoid blocking
+    console.error('Error fetching categories:', err);
+    return [];
   }
 }
 

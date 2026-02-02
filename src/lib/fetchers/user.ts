@@ -160,3 +160,21 @@ export async function updateUserRoles(userId: string, roles: string[]): Promise<
   });
   if (!res.ok) throw new Error(`Failed to update user roles: ${res.status}`);
 }
+// ---------------------------------------------------------------------------
+// Profile Management
+// ---------------------------------------------------------------------------
+
+export async function updateUser(
+  userId: string,
+  data: Partial<GetUser> & { password?: string }
+): Promise<GetUser | null> {
+  const res = await authFetch(`${UserRoutes.base}/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.data ?? json; // Adjust based on actual API response structure
+}

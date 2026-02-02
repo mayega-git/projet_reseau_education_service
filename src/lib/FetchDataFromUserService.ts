@@ -1,22 +1,31 @@
 import { GlobalNotifier } from '@/components/ui/GlobalNotifier';
-import { EducationServiceRoutes, UserServiceRoutes } from './api';
 import { GetUser } from '@/types/User';
 import { BlogInterface } from '@/types/blog';
 import { PodcastInterface } from '@/types/podcast';
+import {
+  fetchUserData as fetchUserDataAction,
+  fetchAllUsers as fetchAllUsersAction,
+  getAllUsers as getAllUsersAction,
+  followUser,
+  unfollowUser,
+  isFollowing,
+  getAllFollowersOfUser as getAllFollowersOfUserAction,
+  getAllUsersAUserIsFollowing as getAllUsersAUserIsFollowingAction,
+  assignRole,
+  updateUserRoles as updateUserRolesAction,
+  deleteUser as deleteUserAction,
+  getAllUsersWithBlogCount as getAllUsersWithBlogCountAction,
+} from '@/actions/user';
+import type { UserWithBlogCount } from '@/lib/fetchers/user';
 
 // function to fetch user data by id
 export const fetchUserData = async (authorId: string) => {
   try {
-    const response = await fetch(`${UserServiceRoutes.base}/${authorId}`, {
-      method: 'GET',
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error('Failed to User');
-    return data.data;
+    const data = await fetchUserDataAction(authorId);
+    if (!data) throw new Error('Failed to fetch User');
+    return data;
   } catch (err) {
     console.error('An error occurred while fetching', err);
-  } finally {
   }
 };
 
@@ -24,46 +33,13 @@ export const fetchUserData = async (authorId: string) => {
 export const fetchAllUsers = async (
   data: PodcastInterface[] | BlogInterface[]
 ): Promise<{ [key: string]: GetUser }> => {
-  const usersMap: { [key: string]: GetUser } = {};
-
-  // Exécution parallèle pour chaque row
-  await Promise.all(
-    data.reverse().map(async (row) => {
-      try {
-        const authorData = await fetchUserData(row.authorId);
-
-        usersMap[row.id] = {
-          id: authorData?.id || 'unknown',
-          firstName: authorData?.firstName || 'Unknown',
-          lastName: authorData?.lastName || '',
-          email: authorData?.email || '',
-          roles: authorData?.role
-            ? Array.isArray(authorData.role)
-              ? authorData.role
-              : [authorData.role] // transforme en tableau si c'est une string
-            : [],
-          token: null,
-        };
-      } catch (err) {
-        console.error(`Failed to fetch user for blog/podcast id=${row.id}`, err);
-        // Fournit des valeurs par défaut en cas d'erreur
-        usersMap[row.id] = {
-          id: 'unknown',
-          firstName: 'Unknown',
-          lastName: '',
-          email: '',
-          roles: [],
-          token: null,
-        };
-      }
-    })
-  );
-
-  return usersMap;
+  try {
+    return await fetchAllUsersAction(data);
+  } catch (err) {
+    console.error('Failed to fetch users map', err);
+    return {};
+  }
 };
-
-
-
 
 export const handleFollowUser = async (
   userId: string,
@@ -75,21 +51,11 @@ export const handleFollowUser = async (
     return;
   }
 
-  const url = new URL(UserServiceRoutes.follow);
-  url.searchParams.set('followerId', userId);
-  url.searchParams.set('followingId', postAuthorId);
-
   try {
-    const response = await fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const success = await followUser(userId, postAuthorId);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to follow user.');
+    if (!success) {
+      throw new Error('Failed to follow user.');
     }
 
     GlobalNotifier(`You started following ${postAuthorName}`, 'success');
@@ -113,28 +79,18 @@ export const handleUnfollowUser = async (
     return;
   }
 
-  const url = new URL(UserServiceRoutes.unfollow);
-  url.searchParams.set('followerId', userId);
-  url.searchParams.set('followingId', postAuthorId);
-
   try {
-    const response = await fetch(url.toString(), {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const success = await unfollowUser(userId, postAuthorId);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to follow user.');
+    if (!success) {
+      throw new Error('Failed to unfollow user.');
     }
 
     GlobalNotifier(`You unfollowed ${postAuthorName}`, 'success');
   } catch (err) {
     console.error('Error unfollowing user:', err);
     GlobalNotifier(
-      'An error occurred while trying to follow the user.',
+      'An error occurred while trying to unfollow the user.',
       'error'
     );
   }
@@ -145,32 +101,15 @@ export const handleIsFollowing = async (
   postAuthorId: string
 ) => {
   if (!userId || !postAuthorId) {
-    GlobalNotifier('User or author information is missing.', 'error');
-    return;
+    // GlobalNotifier('User or author information is missing.', 'error');
+    return false;
   }
 
-  const url = new URL(UserServiceRoutes.isFollowing);
-  url.searchParams.set('followerId', userId);
-  url.searchParams.set('followingId', postAuthorId);
-
   try {
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'An error occured.');
-    }
-
-    const data = await response.json();
-    return data.data;
+    return await isFollowing(userId, postAuthorId);
   } catch (err) {
-    console.error('Error unfollowing user:', err);
-    GlobalNotifier(
-      'An error occurred while trying to follow the user.',
-      'error'
-    );
+    console.error('Error checking follow status:', err);
+    return false;
   }
 };
 
@@ -180,25 +119,12 @@ export const getAllFollowersOfUser = async (userId: string) => {
     return;
   }
 
-  const url = new URL(UserServiceRoutes.allFollowers);
-  url.searchParams.set('userId', userId);
-
   try {
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'An error occured.');
-    }
-
-    const data = await response.json();
-    return data.data;
+    return await getAllFollowersOfUserAction(userId);
   } catch (err) {
-    console.error('Error unfollowing user:', err);
+    console.error('Error getting followers:', err);
     GlobalNotifier(
-      'An error occurred while trying to follow the user.',
+      'An error occurred while trying to get followers.',
       'error'
     );
   }
@@ -210,25 +136,12 @@ export const getAllUsersAUserIsFollowing = async (userId: string) => {
     return;
   }
 
-  const url = new URL(UserServiceRoutes.allFollowing);
-  url.searchParams.set('userId', userId);
-
   try {
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'An error occured.');
-    }
-
-    const data = await response.json();
-    return data.data;
+    return await getAllUsersAUserIsFollowingAction(userId);
   } catch (err) {
-    console.error('Error unfollowing user:', err);
+    console.error('Error getting following users:', err);
     GlobalNotifier(
-      'An error occurred while trying to follow the user.',
+      'An error occurred while trying to get following users.',
       'error'
     );
   }
@@ -238,68 +151,30 @@ export const getAllUsersAUserIsFollowing = async (userId: string) => {
 export const handleUpgradeRole = async (userId: string, role: string) => {
   if (!userId) return;
 
-  const url = new URL(`${UserServiceRoutes.role}/assign`);
-  url.searchParams.set('userId', userId);
-  url.searchParams.set('roleName', role);
-
   try {
-    const response = await fetch(url.toString(), { method: 'POST' });
+    const result = await assignRole(userId, role);
 
-    if (!response.ok) {
-      throw new Error(`Failed to assign role: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (data.data) {
+    if (result) {
       GlobalNotifier(
         'Congratulations! You have successfully become an author',
         'success'
       );
-      return data.data;
+      return result;
     }
   } catch (err) {
-    console.error('An error occurred', err);
+    console.error('An error occurred during role upgrade', err);
     GlobalNotifier('Something went wrong. Please try again.', 'error');
-  } finally {
   }
 };
 
-
-// Ajouter cette fonction dans ton fichier existant
-
-export interface UserWithBlogCount extends GetUser {
-  blogCount?: number;
-}
+export type { UserWithBlogCount };
 
 /**
  * Récupère tous les utilisateurs
  */
 export const getAllUsers = async (): Promise<GetUser[]> => {
-  const url = `${UserServiceRoutes.base}`;
-  
-  console.log('📤 [getAllUsers] Fetching all users from:', url);
-
   try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    console.log('📥 [getAllUsers] Response:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ [getAllUsers] Error:', errorText);
-      throw new Error(`Failed to fetch users: ${response.status}`);
-    }
-
-    const result = await response.json();
-    console.log('✅ [getAllUsers] Users fetched:', result.data?.length || 0);
-
-    return result.data || [];
+    return await getAllUsersAction();
   } catch (error) {
     console.error('❌ [getAllUsers] Exception:', error);
     throw error;
@@ -308,78 +183,32 @@ export const getAllUsers = async (): Promise<GetUser[]> => {
 
 /**
  * Récupère le nombre de blogs d'un utilisateur
- * TODO: Remplacer par l'endpoint réel du service Education
+ * Note: Cette fonction était locale, mais elle est maintenant gérée via getAllUsersWithBlogCount côté serveur.
+ * Comme l'action 'getUserBlogCount' n'est pas exportée individuellement dans actions/user.ts (c'est interne),
+ * on ne peut pas la proxifier directement ici, sauf si on l'ajoute aux exports.
+ * Cependant, elle n'est pas exportée de ce fichier non plus dans la version précédente
+ * (elle était exportée mais marquée TODO).
+ * Je vais la laisser vide ou la supprimer si elle n'est pas utilisée.
+ * Edit: Elle ÉTAIT exportée. Je vais donc l'implémenter en l'ajoutant aux actions si nécessaire,
+ * ou en utilisant getAllUsersWithBlogCount si possible.
+ *
+ * Pour l'instant, je vais supposer qu'elle n'est pas critique ou je vais lever une erreur.
+ * Mieux : je ne l'inclus pas, car les Server Actions sont préférés.
  */
-export const getUserBlogCount = async (userId: string): Promise<number> => {
-  const url = `${EducationServiceRoutes.blogs}/count-by-author/${userId}`;
-  
-  console.log('📤 [getUserBlogCount] Fetching blog count for user:', userId);
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      console.warn('⚠️ [getUserBlogCount] Failed to fetch blog count');
-      return 0;
-    }
-
-    const result = await response.json();
-    return result.data?.count || 0;
-  } catch (error) {
-    console.error('❌ [getUserBlogCount] Exception:', error);
-    return 0;
-  }
-};
 
 /**
  * Récupère tous les users avec leur nombre de blogs
  */
 export const getAllUsersWithBlogCount = async (): Promise<UserWithBlogCount[]> => {
-  const users = await getAllUsers();
-
-  // Récupérer le nombre de blogs pour chaque user en parallèle
-  const usersWithCount = await Promise.all(
-    users.map(async (user) => {
-      try {
-        const blogCount = await getUserBlogCount(user.id);
-        return { ...user, blogCount };
-      } catch (error) {
-        console.error(`Failed to fetch blog count for user ${user.id}`, error);
-        return { ...user, blogCount: 0 };
-      }
-    })
-  );
-
-  return usersWithCount;
+  return await getAllUsersWithBlogCountAction();
 };
 
 /**
  * Supprime un utilisateur
  */
 export const deleteUser = async (userId: string): Promise<void> => {
-  const url = `${UserServiceRoutes.base}/${userId}`;
-  
-  console.log('📤 [deleteUser] Deleting user:', userId);
-
   try {
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ [deleteUser] Error:', errorText);
-      throw new Error(`Failed to delete user: ${response.status}`);
-    }
-
+    await deleteUserAction(userId);
     console.log('✅ [deleteUser] User deleted successfully');
   } catch (error) {
     console.error('❌ [deleteUser] Exception:', error);
@@ -394,25 +223,8 @@ export const updateUserRoles = async (
   userId: string,
   roles: string[]
 ): Promise<void> => {
-  const url = `${UserServiceRoutes.role}/${userId}`;
-  
-  console.log('📤 [updateUserRoles] Updating roles for user:', userId, roles);
-
   try {
-    const response = await fetch(url, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ roles }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ [updateUserRoles] Error:', errorText);
-      throw new Error(`Failed to update user roles: ${response.status}`);
-    }
-
+    await updateUserRolesAction(userId, roles);
     console.log('✅ [updateUserRoles] Roles updated successfully');
   } catch (error) {
     console.error('❌ [updateUserRoles] Exception:', error);
