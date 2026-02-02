@@ -334,6 +334,19 @@ export default function ProfileClientComponent({
                         </Button>
                       </Link>
                     </div>
+                    <div className="rounded-lg border border-grey-100 p-4 bg-gray-50">
+                      <p className="paragraph-medium-medium">
+                        Redacteur
+                      </p>
+                      <p className="paragraph-small-normal text-black-300 mt-1">
+                        Deviens redacteur pour creer et gerer des newsletters.
+                      </p>
+                      <Link href="/newsletter/redacteur">
+                        <Button variant="outline" className="mt-3">
+                          Demander l'acces redacteur
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 )}
             </div>

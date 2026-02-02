@@ -19,22 +19,31 @@ const UpdateNewsletterPage = () => {
   const newsletterId = searchParams.get('id');
   const [newsletter, setNewsletter] = useState<NewsletterResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [redacteurId, setRedacteurId] = useState('');
+
+  useEffect(() => {
+    const storedId = localStorage.getItem('newsletterRedacteurId') || '';
+    if (storedId) {
+      setRedacteurId(storedId);
+    }
+  }, []);
 
   useEffect(() => {
     const loadNewsletter = async () => {
-      if (!user?.id || !newsletterId) {
+      const activeRedacteurId = user?.id || redacteurId;
+      if (!activeRedacteurId || !newsletterId) {
         setLoading(false);
         return;
       }
 
-      const data = await fetchNewslettersByRedacteur(user.id);
+      const data = await fetchNewslettersByRedacteur(activeRedacteurId);
       const match = data.find((item) => item.id === newsletterId) || null;
       setNewsletter(match);
       setLoading(false);
     };
 
     loadNewsletter();
-  }, [newsletterId, user?.id]);
+  }, [newsletterId, redacteurId, user?.id]);
 
   return (
     <div className="w-full flex flex-col justify-between min-h-screen">

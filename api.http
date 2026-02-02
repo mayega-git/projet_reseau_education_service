@@ -1,0 +1,503 @@
+@baseUrl = http://localhost:8083
+@redacteurId = 11111111-1111-1111-1111-111111111111
+@newsletterId = 22222222-2222-2222-2222-222222222222
+@lecteurId = 33333333-3333-3333-3333-333333333333
+@categorieId = 44444444-4444-4444-4444-444444444444
+@categorieId2 = 55555555-5555-5555-5555-555555555555
+@requestId = 66666666-6666-6666-6666-666666666666
+
+### Redacteurs - soumettre une demande d'inscription
+POST {{baseUrl}}/api/redacteurs/request
+Content-Type: application/json
+
+{
+  "email": "reda@example.com",
+  "password": "password123",
+  "nom": "Doe",
+  "prenom": "John"
+}
+
+# 201
+# {
+#   "id": "66666666-6666-6666-6666-666666666666",
+#   "email": "reda@example.com",
+#   "nom": "Doe",
+#   "prenom": "John",
+#   "status": "PENDING",
+#   "createdAt": "2026-01-25T10:00:00",
+#   "processedAt": null,
+#   "rejectionReason": null
+# }
+
+### Redacteurs - récupérer le statut d'une demande
+GET {{baseUrl}}/api/redacteurs/request/{{requestId}}
+
+# 200
+# {
+#   "id": "66666666-6666-6666-6666-666666666666",
+#   "email": "reda@example.com",
+#   "nom": "Doe",
+#   "prenom": "John",
+#   "status": "PENDING",
+#   "createdAt": "2026-01-25T10:00:00",
+#   "processedAt": null,
+#   "rejectionReason": null
+# }
+
+### Admin - demandes en attente (paginées)
+GET {{baseUrl}}/api/admin/redacteurs/pending?page=0&size=20
+
+# 200
+# [
+#   {
+#     "id": "66666666-6666-6666-6666-666666666666",
+#     "email": "reda@example.com",
+#     "nom": "Doe",
+#     "prenom": "John",
+#     "status": "PENDING",
+#     "createdAt": "2026-01-25T10:00:00",
+#     "processedAt": null,
+#     "rejectionReason": null
+#   }
+# ]
+
+### Admin - nombre de demandes en attente
+GET {{baseUrl}}/api/admin/redacteurs/pending/count
+
+# 200
+# 3
+
+### Admin - toutes les demandes
+GET {{baseUrl}}/api/admin/redacteurs/requests
+
+# 200
+# [
+#   {
+#     "id": "66666666-6666-6666-6666-666666666666",
+#     "email": "reda@example.com",
+#     "nom": "Doe",
+#     "prenom": "John",
+#     "status": "PENDING",
+#     "createdAt": "2026-01-25T10:00:00",
+#     "processedAt": null,
+#     "rejectionReason": null
+#   }
+# ]
+
+### Admin - détail d'une demande
+GET {{baseUrl}}/api/admin/redacteurs/requests/{{requestId}}
+
+# 200
+# {
+#   "id": "66666666-6666-6666-6666-666666666666",
+#   "email": "reda@example.com",
+#   "nom": "Doe",
+#   "prenom": "John",
+#   "status": "PENDING",
+#   "createdAt": "2026-01-25T10:00:00",
+#   "processedAt": null,
+#   "rejectionReason": null
+# }
+
+### Admin - approuver une demande
+POST {{baseUrl}}/api/admin/redacteurs/requests/{{requestId}}/approve
+Content-Type: application/json
+
+{}
+
+# 200
+# {
+#   "id": "66666666-6666-6666-6666-666666666666",
+#   "email": "reda@example.com",
+#   "nom": "Doe",
+#   "prenom": "John",
+#   "status": "APPROVED",
+#   "createdAt": "2026-01-25T10:00:00",
+#   "processedAt": "2026-01-25T10:30:00",
+#   "rejectionReason": null
+# }
+
+### Admin - rejeter une demande
+POST {{baseUrl}}/api/admin/redacteurs/requests/{{requestId}}/reject
+Content-Type: application/json
+
+{
+  "reason": "Profil incomplet"
+}
+
+# 200
+# {
+#   "id": "66666666-6666-6666-6666-666666666666",
+#   "email": "reda@example.com",
+#   "nom": "Doe",
+#   "prenom": "John",
+#   "status": "REJECTED",
+#   "createdAt": "2026-01-25T10:00:00",
+#   "processedAt": "2026-01-25T10:30:00",
+#   "rejectionReason": "Profil incomplet"
+# }
+
+### Lecteurs - inscription (sans catégories)
+POST {{baseUrl}}/api/lecteurs/register
+Content-Type: application/json
+
+{
+  "email": "lecteur@example.com",
+  "nom": "Martin",
+  "prenom": "Sophie"
+}
+
+# 201
+# {
+#   "id": "33333333-3333-3333-3333-333333333333",
+#   "userId": null,
+#   "email": "lecteur@example.com",
+#   "nom": "Martin",
+#   "prenom": "Sophie",
+#   "categories": [],
+#   "createdAt": "2026-01-25T11:00:00"
+# }
+
+### Lecteurs - s'abonner à des catégories
+POST {{baseUrl}}/api/lecteurs/{{lecteurId}}/subscribe
+Content-Type: application/json
+
+{
+  "categorieIds": [
+    "{{categorieId}}",
+    "{{categorieId2}}"
+  ]
+}
+
+# 200
+# {
+#   "id": "33333333-3333-3333-3333-333333333333",
+#   "userId": null,
+#   "email": "lecteur@example.com",
+#   "nom": "Martin",
+#   "prenom": "Sophie",
+#   "categories": [
+#     {
+#       "id": "44444444-4444-4444-4444-444444444444",
+#       "nom": "Tech",
+#       "description": "Actualites tech"
+#     }
+#   ],
+#   "createdAt": "2026-01-25T11:00:00"
+# }
+
+### Lecteurs - récupérer les préférences
+GET {{baseUrl}}/api/lecteurs/{{lecteurId}}/preferences
+
+# 200
+# {
+#   "id": "33333333-3333-3333-3333-333333333333",
+#   "userId": null,
+#   "email": "lecteur@example.com",
+#   "nom": "Martin",
+#   "prenom": "Sophie",
+#   "categories": [
+#     {
+#       "id": "44444444-4444-4444-4444-444444444444",
+#       "nom": "Tech",
+#       "description": "Actualites tech"
+#     }
+#   ],
+#   "createdAt": "2026-01-25T11:00:00"
+# }
+
+### Lecteurs - mettre a jour les categories
+PUT {{baseUrl}}/api/lecteurs/{{lecteurId}}/categories
+Content-Type: application/json
+
+{
+  "categorieIds": [
+    "{{categorieId2}}"
+  ]
+}
+
+# 200
+# {
+#   "id": "33333333-3333-3333-3333-333333333333",
+#   "userId": null,
+#   "email": "lecteur@example.com",
+#   "nom": "Martin",
+#   "prenom": "Sophie",
+#   "categories": [
+#     {
+#       "id": "55555555-5555-5555-5555-555555555555",
+#       "nom": "Finance",
+#       "description": "Actualites finance"
+#     }
+#   ],
+#   "createdAt": "2026-01-25T11:00:00"
+# }
+
+### Lecteurs - se desabonner de toutes les categories
+DELETE {{baseUrl}}/api/lecteurs/{{lecteurId}}/categories
+
+# 200
+# {
+#   "id": "33333333-3333-3333-3333-333333333333",
+#   "userId": null,
+#   "email": "lecteur@example.com",
+#   "nom": "Martin",
+#   "prenom": "Sophie",
+#   "categories": [],
+#   "createdAt": "2026-01-25T11:00:00"
+# }
+
+### Lecteurs - se desabonner d'une newsletter specifique
+POST {{baseUrl}}/api/lecteurs/{{lecteurId}}/unsubscribe/{{newsletterId}}
+
+# 204
+
+### Categories - creer une categorie
+POST {{baseUrl}}/api/categorie
+Content-Type: application/json
+
+{
+  "nom": "Tech",
+  "description": "Actualites tech"
+}
+
+# 201
+# {
+#   "id": "44444444-4444-4444-4444-444444444444",
+#   "nom": "Tech",
+#   "description": "Actualites tech"
+# }
+
+### Categories - lister toutes les categories
+GET {{baseUrl}}/api/categorie
+
+# 200
+# [
+#   {
+#     "id": "44444444-4444-4444-4444-444444444444",
+#     "nom": "Tech",
+#     "description": "Actualites tech"
+#   }
+# ]
+
+### Categories - recuperer une categorie par ID
+GET {{baseUrl}}/api/categorie/{{categorieId}}
+
+# 200
+# {
+#   "id": "44444444-4444-4444-4444-444444444444",
+#   "nom": "Tech",
+#   "description": "Actualites tech"
+# }
+
+### Categories - recuperer une categorie par nom
+GET {{baseUrl}}/api/categorie/nom/Tech
+
+# 200
+# {
+#   "id": "44444444-4444-4444-4444-444444444444",
+#   "nom": "Tech",
+#   "description": "Actualites tech"
+# }
+
+### Categories - mettre a jour une categorie (description)
+PUT {{baseUrl}}/api/categorie/{{categorieId}}?description=Actualites%20tech%20et%20produits
+
+# 200
+# {
+#   "id": "44444444-4444-4444-4444-444444444444",
+#   "nom": "Tech",
+#   "description": "Actualites tech et produits"
+# }
+
+### Categories - supprimer une categorie
+DELETE {{baseUrl}}/api/categorie/{{categorieId}}
+
+# 204
+
+### Newsletters - creer une newsletter
+POST {{baseUrl}}/api/newsletters/newsletters?redacteurId={{redacteurId}}
+Content-Type: application/json
+
+{
+  "titre": "Tendances Tech 2026",
+  "contenu": "<p>Contenu HTML de la newsletter</p>",
+  "categorieIds": [
+    "{{categorieId}}",
+    "{{categorieId2}}"
+  ]
+}
+
+# 201
+# {
+#   "id": "22222222-2222-2222-2222-222222222222",
+#   "titre": "Tendances Tech 2026",
+#   "contenu": "<p>Contenu HTML de la newsletter</p>",
+#   "statut": "BROUILLON",
+#   "redacteurId": "11111111-1111-1111-1111-111111111111",
+#   "redacteurNom": null,
+#   "categories": [
+#     {
+#       "id": "44444444-4444-4444-4444-444444444444",
+#       "nom": "Tech",
+#       "description": "Actualites tech"
+#     }
+#   ],
+#   "createdAt": "2026-01-25T12:00:00",
+#   "publishedAt": null
+# }
+
+### Newsletters - soumettre une newsletter
+POST {{baseUrl}}/api/newsletters/newsletters/{{newsletterId}}/submit?redacteurId={{redacteurId}}
+
+# 200
+# {
+#   "id": "22222222-2222-2222-2222-222222222222",
+#   "titre": "Tendances Tech 2026",
+#   "contenu": "<p>Contenu HTML de la newsletter</p>",
+#   "statut": "SOUMISE",
+#   "redacteurId": "11111111-1111-1111-1111-111111111111",
+#   "redacteurNom": null,
+#   "categories": [
+#     {
+#       "id": "44444444-4444-4444-4444-444444444444",
+#       "nom": "Tech",
+#       "description": "Actualites tech"
+#     }
+#   ],
+#   "createdAt": "2026-01-25T12:00:00",
+#   "publishedAt": null
+# }
+
+### Newsletters - lister par redacteur
+GET {{baseUrl}}/api/newsletters/newsletters/redacteur/{{redacteurId}}
+
+# 200
+# [
+#   {
+#     "id": "22222222-2222-2222-2222-222222222222",
+#     "titre": "Tendances Tech 2026",
+#     "contenu": "<p>Contenu HTML de la newsletter</p>",
+#     "statut": "SOUMISE",
+#     "redacteurId": "11111111-1111-1111-1111-111111111111",
+#     "redacteurNom": null,
+#     "categories": [
+#       {
+#         "id": "44444444-4444-4444-4444-444444444444",
+#         "nom": "Tech",
+#         "description": "Actualites tech"
+#       }
+#     ],
+#     "createdAt": "2026-01-25T12:00:00",
+#     "publishedAt": null
+#   }
+# ]
+
+### Newsletters - lister par statut
+GET {{baseUrl}}/api/newsletters/newsletters?statut=VALIDEE
+
+# 200
+# [
+#   {
+#     "id": "22222222-2222-2222-2222-222222222222",
+#     "titre": "Tendances Tech 2026",
+#     "contenu": "<p>Contenu HTML de la newsletter</p>",
+#     "statut": "VALIDEE",
+#     "redacteurId": "11111111-1111-1111-1111-111111111111",
+#     "redacteurNom": null,
+#     "categories": [
+#       {
+#         "id": "44444444-4444-4444-4444-444444444444",
+#         "nom": "Tech",
+#         "description": "Actualites tech"
+#       }
+#     ],
+#     "createdAt": "2026-01-25T12:00:00",
+#     "publishedAt": null
+#   }
+# ]
+
+### Newsletters - valider une newsletter
+POST {{baseUrl}}/api/newsletters/newsletters/{{newsletterId}}/validate
+
+# 200
+# {
+#   "id": "22222222-2222-2222-2222-222222222222",
+#   "titre": "Tendances Tech 2026",
+#   "contenu": "<p>Contenu HTML de la newsletter</p>",
+#   "statut": "VALIDEE",
+#   "redacteurId": "11111111-1111-1111-1111-111111111111",
+#   "redacteurNom": null,
+#   "categories": [
+#     {
+#       "id": "44444444-4444-4444-4444-444444444444",
+#       "nom": "Tech",
+#       "description": "Actualites tech"
+#     }
+#   ],
+#   "createdAt": "2026-01-25T12:00:00",
+#   "publishedAt": null
+# }
+
+### Newsletters - rejeter une newsletter
+POST {{baseUrl}}/api/newsletters/newsletters/{{newsletterId}}/reject
+
+# 200
+# {
+#   "id": "22222222-2222-2222-2222-222222222222",
+#   "titre": "Tendances Tech 2026",
+#   "contenu": "<p>Contenu HTML de la newsletter</p>",
+#   "statut": "REJETEE",
+#   "redacteurId": "11111111-1111-1111-1111-111111111111",
+#   "redacteurNom": null,
+#   "categories": [
+#     {
+#       "id": "44444444-4444-4444-4444-444444444444",
+#       "nom": "Tech",
+#       "description": "Actualites tech"
+#     }
+#   ],
+#   "createdAt": "2026-01-25T12:00:00",
+#   "publishedAt": null
+# }
+
+### Newsletters - publier une newsletter
+POST {{baseUrl}}/api/newsletters/newsletters/{{newsletterId}}/publish
+
+# 200
+# {
+#   "id": "22222222-2222-2222-2222-222222222222",
+#   "titre": "Tendances Tech 2026",
+#   "contenu": "<p>Contenu HTML de la newsletter</p>",
+#   "statut": "PUBLIEE",
+#   "redacteurId": "11111111-1111-1111-1111-111111111111",
+#   "redacteurNom": null,
+#   "categories": [
+#     {
+#       "id": "44444444-4444-4444-4444-444444444444",
+#       "nom": "Tech",
+#       "description": "Actualites tech"
+#     }
+#   ],
+#   "createdAt": "2026-01-25T12:00:00",
+#   "publishedAt": "2026-01-25T12:30:00"
+# }
+
+### Emails - envoyer un email
+POST {{baseUrl}}/api/emails/send
+Content-Type: application/json
+
+{
+  "emailDestinataire": "lecteur@example.com",
+  "sujet": "Votre newsletter",
+  "contenuEmail": "Bonjour, voici votre newsletter."
+}
+
+# 200
+# {
+#   "message": "Email envoye avec succes"
+# }
+# 500
+# {
+#   "erreur": "Echec de l'envoi de l'email : <detail>"
+# }

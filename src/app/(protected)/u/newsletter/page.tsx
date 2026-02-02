@@ -18,20 +18,29 @@ const NewsletterDashboard = () => {
   const router = useRouter();
   const [newsletters, setNewsletters] = useState<NewsletterResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [redacteurId, setRedacteurId] = useState('');
+
+  useEffect(() => {
+    const storedId = localStorage.getItem('newsletterRedacteurId') || '';
+    if (storedId) {
+      setRedacteurId(storedId);
+    }
+  }, []);
 
   const loadNewsletters = async () => {
-    if (!user?.id) {
+    const activeRedacteurId = user?.id || redacteurId;
+    if (!activeRedacteurId) {
       setLoading(false);
       return;
     }
-    const data = await fetchNewslettersByRedacteur(user.id);
+    const data = await fetchNewslettersByRedacteur(activeRedacteurId);
     setNewsletters(data);
     setLoading(false);
   };
 
   useEffect(() => {
     loadNewsletters();
-  }, [user?.id]);
+  }, [redacteurId, user?.id]);
 
   return (
     <div className="w-full flex flex-col justify-between min-h-screen">
@@ -61,7 +70,7 @@ const NewsletterDashboard = () => {
             <NewsletterDataTable
               data={newsletters}
               variant="redacteur"
-              redacteurId={user?.id}
+              redacteurId={user?.id || redacteurId}
               onRefresh={loadNewsletters}
               onEdit={(id) => router.push(`/newsletter/update?id=${id}`)}
             />
