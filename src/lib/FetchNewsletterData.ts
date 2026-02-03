@@ -546,13 +546,12 @@ export const fetchRedacteurByEmail = async (
   }
 
   try {
-    const encodedEmail = encodeURIComponent(email);
-    const response = await fetch(
-      `${NewsletterServiceRoutes.redacteurs}/${encodedEmail}`,
-      {
-        method: 'GET',
-      }
-    );
+    // @ts-ignore
+      const url = new URL(NewsletterServiceRoutes.redacteursByEmail);
+    url.searchParams.set('email', email);
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+    });
     const data = (await resolvePayload(response)) as RedacteurResponse | null;
     if (!response.ok || !data) {
       return null;
