@@ -50,4 +50,5 @@ export const NewsletterServiceRoutes = {
   newsletters: `${BASE_URL_NEWSLETTER_API}/newsletters/newsletters`,
   redacteursRequest: `${BASE_URL_NEWSLETTER_API}/redacteurs/request`,
   redacteursAdminRequests: `${BASE_URL_NEWSLETTER_API}/admin/redacteurs/requests`,
+  redacteurs: `${BASE_URL_NEWSLETTER_API}/redacteurs`,
 };

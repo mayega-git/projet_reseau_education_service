@@ -16,8 +16,9 @@ const StatusTag: React.FC<StatusTagProps> = ({ status }) => {
   
 
   let statusColor = '';
+  const normalizedStatus = status.toUpperCase();
 
-  switch (status) {
+  switch (normalizedStatus) {
     case 'DRAFT':
     case 'BROUILLON':
       statusColor = 'bg-blue-500 text-white';
@@ -43,6 +44,7 @@ const StatusTag: React.FC<StatusTagProps> = ({ status }) => {
       statusColor = 'bg-yellow-500 text-white';
       break;
     case 'APPROVED':
+    case 'APPROUVED':
       statusColor = 'bg-green-500 text-white';
       break;
     case 'REJECTED':
@@ -56,7 +58,7 @@ const StatusTag: React.FC<StatusTagProps> = ({ status }) => {
     <span
       className={`inline-block px-3 py-1 text-sm font-semibold rounded-[6px] ${statusColor}`}
     >
-      {status.toLowerCase()}{' '}
+      {status.toLowerCase()}
     </span>
   );
 };

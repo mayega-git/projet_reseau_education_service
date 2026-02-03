@@ -23,8 +23,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       pathname.startsWith('/newsletter/update');
     if (storedToken) {
       setToken(storedToken);
-    } else if (!storedToken && isNewsletterRoute && storedRedacteurId) {
-      setToken('redacteur-session');
+    } else if (!storedToken && isNewsletterRoute) {
+      setToken(storedRedacteurId || 'redacteur-check');
     } else if (!storedToken) {
       // console.log(token, 'token logged in protectedroute');
       console.log(storedToken, 'storedtoken logged in protectedroute');

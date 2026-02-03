@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { GlobalNotifier } from '@/components/ui/GlobalNotifier';
 import { useAuth } from '@/context/AuthContext';
 import {
+  fetchRedacteurByEmail,
   fetchRedacteurRequestStatus,
   submitRedacteurRequest,
 } from '@/lib/FetchNewsletterData';
@@ -102,14 +103,45 @@ const RedacteurAccessPage = () => {
       setEmail((current) => current || storedEmail);
     }
 
+    const emailToCheck = storedEmail || user?.sub || '';
+    if (emailToCheck) {
+      fetchRedacteurByEmail(emailToCheck).then((result) => {
+        const status = result?.status?.toUpperCase();
+        if (status === 'APPROUVED' || status === 'APPROVED') {
+          localStorage.setItem(REDACTEUR_ID_KEY, result?.id || '');
+          localStorage.setItem(REDACTEUR_EMAIL_KEY, emailToCheck);
+          router.replace('/u/newsletter');
+          return;
+        }
+        if (result?.status) {
+          setRequest(result);
+          setStep('status');
+        }
+      });
+    }
+
     if (storedRequestId) {
       void checkStatus(storedRequestId, true);
     }
-  }, [checkStatus]);
+  }, [checkStatus, router, user?.sub]);
 
   const handleLookup = async () => {
     if (!email.trim()) {
       GlobalNotifier('Email requis.', 'warning');
+      return;
+    }
+
+    const existing = await fetchRedacteurByEmail(email.trim());
+    const existingStatus = existing?.status?.toUpperCase();
+    if (existingStatus === 'APPROUVED' || existingStatus === 'APPROVED') {
+      localStorage.setItem(REDACTEUR_ID_KEY, existing?.id || '');
+      localStorage.setItem(REDACTEUR_EMAIL_KEY, email.trim());
+      router.replace('/u/newsletter');
+      return;
+    }
+    if (existing?.status) {
+      setRequest(existing);
+      setStep('status');
       return;
     }
 

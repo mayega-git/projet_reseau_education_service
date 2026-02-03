@@ -40,6 +40,7 @@ const normalizeStatus = (
   if (!status) return null;
   const normalized = status.toUpperCase();
   if (normalized === 'PENDING') return 'PENDING';
+  if (normalized === 'APPROUVED') return 'APPROVED';
   if (normalized === 'APPROVED') return 'APPROVED';
   if (normalized === 'REJECTED') return 'REJECTED';
   return null;

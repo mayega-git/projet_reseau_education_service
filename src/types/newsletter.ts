@@ -64,3 +64,5 @@ export interface RedacteurRequestResponse {
   processedAt?: string | null;
   rejectionReason?: string | null;
 }
+
+export type RedacteurResponse = RedacteurRequestResponse;

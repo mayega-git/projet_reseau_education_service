@@ -11,6 +11,7 @@ import type {
   NewsletterStatus,
   RedacteurRequestResponse,
   RedacteurRequestSubmission,
+  RedacteurResponse,
 } from '@/types/newsletter';
 
 const resolvePayload = async (response: Response) => {
@@ -529,6 +530,37 @@ export const fetchRedacteurRequests = async (): Promise<
   } catch (error) {
     console.error('Failed to fetch redacteur requests.', error);
     return [];
+  }
+};
+
+export const fetchRedacteurByEmail = async (
+  email: string
+): Promise<RedacteurResponse | null> => {
+  if (!BASE_URL_NEWSLETTER_API) {
+    console.error('Missing NEXT_PUBLIC_NEWSLETTER_API.');
+    return null;
+  }
+
+  if (!email) {
+    return null;
+  }
+
+  try {
+    const encodedEmail = encodeURIComponent(email);
+    const response = await fetch(
+      `${NewsletterServiceRoutes.redacteurs}/${encodedEmail}`,
+      {
+        method: 'GET',
+      }
+    );
+    const data = (await resolvePayload(response)) as RedacteurResponse | null;
+    if (!response.ok || !data) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch redacteur by email.', error);
+    return null;
   }
 };
 
