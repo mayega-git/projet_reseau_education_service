@@ -296,24 +296,19 @@ const domainChoices = Array.from(new Set(categories.map(c => c.domain)));
 
     try {
       setIsLoading(true);
-      const response = await serverCreateBlog(formData);
+      const result = await serverCreateBlog(formData);
 
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-      const data = responseText ? JSON.parse(responseText) : {};
-      console.log(data);
-      if (response.ok) {
+      if (result.success) {
         GlobalNotifier('Blog created successfully', 'success');
-        // router.refresh();
         window.location.reload();
+      } else {
+        GlobalNotifier(result.error ?? 'Error creating blog', 'error');
       }
     } catch (err) {
-      
       console.error('Error creating blog:', err);
-      GlobalNotifier('Error creating blog:', 'error');
+      GlobalNotifier('An unexpected error occurred', 'error');
     } finally {
       setIsLoading(false);
-      // router.refresh();
     }
 
     // router.refresh();

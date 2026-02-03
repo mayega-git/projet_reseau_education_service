@@ -70,7 +70,7 @@ const CreatePodcastComponent = () => {
     audioUrl: '',
     domain: 'TAXI',
     tags: [],
-    categories: [], // Replace with actual category selection
+    categories: [], 
   });
 
   async function fetchAllTags() {
@@ -161,8 +161,9 @@ const CreatePodcastComponent = () => {
         title: podcastData.title,
         description: podcastData.description,
         authorId: user?.id,
+        domain: podcastData.domain,
         tags: podcastData.tags,
-        categoryId: podcastData.categories,
+        categories: podcastData.categories,
       })
     );
     // Step 2: Add the file data
@@ -194,15 +195,17 @@ const CreatePodcastComponent = () => {
 
     try {
       setIsLoading(true);
-      const response = await serverCreatePodcast(formData);
+      const result = await serverCreatePodcast(formData);
 
-      const data = await response.json();
-      if (response.ok) {
+      if (result.success) {
         GlobalNotifier('Podcast created successfully', 'success');
         window.location.reload();
+      } else {
+        GlobalNotifier(result.error ?? 'Error creating podcast', 'error');
       }
     } catch (err) {
-      console.error('Error creating blog:', err);
+      console.error('Error creating podcast:', err);
+      GlobalNotifier('An unexpected error occurred', 'error');
     } finally {
       setIsLoading(false);
     }

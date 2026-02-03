@@ -36,6 +36,7 @@ const RedacteurAccessPage = () => {
   const [step, setStep] = useState<Step>('lookup');
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
+  const [password, setPassword] = useState('');
   const [lastName, setLastName] = useState('');
   const [request, setRequest] = useState<RedacteurRequestResponse | null>(null);
   const [redacteurSessionId, setRedacteurSessionId] = useState('');
@@ -171,6 +172,7 @@ const RedacteurAccessPage = () => {
       email,
       nom: lastName,
       prenom: firstName,
+      password: password,
     });
     setSubmitting(false);
 
@@ -250,7 +252,7 @@ const RedacteurAccessPage = () => {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="redacteur-first-name" className="form-label">
-                    Prenom
+                    First name
                   </label>
                   <input
                     id="redacteur-first-name"
@@ -262,7 +264,7 @@ const RedacteurAccessPage = () => {
                 </div>
                 <div>
                   <label htmlFor="redacteur-last-name" className="form-label">
-                    Nom
+                    Last name
                   </label>
                   <input
                     id="redacteur-last-name"
@@ -271,6 +273,20 @@ const RedacteurAccessPage = () => {
                     onChange={(event) => setLastName(event.target.value)}
                     className="custom-input"
                   />
+                  
+                </div>
+                <div>
+                  <label htmlFor="redacteur-password" className="form-label">
+                      Password
+                  </label>
+                  <input
+                    id="redacteur-password"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="custom-input"
+                  />
+                  
                 </div>
               </div>
               <div className="flex items-center gap-3">

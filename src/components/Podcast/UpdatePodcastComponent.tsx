@@ -75,7 +75,7 @@ const UpdatePodcastComponent: React.FC<UpdatePodcastComponentProps> = ({
     audioUrl: '',
     domain: 'TAXI',
     tags: podcast.tags,
-    categoryId: '', // Replace with actual category selection
+    categories: podcast.categories, // Replace with actual category selection
   });
 
   async function fetchAllTags() {
@@ -125,7 +125,7 @@ const UpdatePodcastComponent: React.FC<UpdatePodcastComponentProps> = ({
     if (!podcastData.audioUrl) newErrors.audioFile = 'Audio File is required';
     if (podcastData.tags.length === 0)
       newErrors.tags = 'At least one tag is required';
-    if (!podcastData.categoryId.trim())
+    if (!podcastData.categories || podcastData.categories.length === 0)
       newErrors.categoryId = 'At least one category is required';
 
     setErrors(newErrors);
@@ -152,7 +152,7 @@ const UpdatePodcastComponent: React.FC<UpdatePodcastComponentProps> = ({
         description: podcastData.description,
         authorId: user?.id,
         tags: podcastData.tags,
-        categoryId: podcastData.categoryId,
+        categories: podcastData.categories,
       })
     );
     // Step 2: Add the file data
@@ -184,15 +184,17 @@ const UpdatePodcastComponent: React.FC<UpdatePodcastComponentProps> = ({
 
     try {
       setIsLoading(true);
-      const response = await serverUpdatePodcast(podcast.id, formData);
+      const result = await serverUpdatePodcast(podcast.id, formData);
 
-      const data = await response.json();
-      if (response.ok) {
-        GlobalNotifier('Podcast created successfully', 'success');
+      if (result.success) {
+        GlobalNotifier('Podcast updated successfully', 'success');
         window.location.reload();
+      } else {
+        GlobalNotifier(result.error ?? 'Error updating podcast', 'error');
       }
     } catch (err) {
-      console.error('Error creating blog:', err);
+      console.error('Error updating podcast:', err);
+      GlobalNotifier('An unexpected error occurred', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -317,9 +319,9 @@ const UpdatePodcastComponent: React.FC<UpdatePodcastComponentProps> = ({
                   </label>
                   <SingleSelectDropdown
                     choices={categories}
-                    selectedChoiceId={podcastData.categoryId}
+                    selectedChoiceId={podcastData.categories[0] || ''}
                     setSelectedChoiceId={(id) =>
-                      setPodcastData({ ...podcastData, categoryId: id })
+                      setPodcastData({ ...podcastData, categories: [id] })
                     }
                   />
                   {errors.categoryId && (

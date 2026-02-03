@@ -100,18 +100,32 @@ const DELETE_URL_MAP: Record<string, string> = {
 // Blog CRUD
 // ---------------------------------------------------------------------------
 
-export async function createBlog(formData: FormData): Promise<Response> {
-  return authFetch(EducationRoutes.blogs, {
-    method: 'POST',
-    body: formData, // FormData — no Content-Type header (boundary set automatically)
-  });
+export async function createBlog(formData: FormData): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const res = await authFetch(EducationRoutes.blogs, {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return { success: false, error: data?.message ?? `Status ${res.status}` };
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
 }
 
-export async function updateBlog(id: string, formData: FormData): Promise<Response> {
-  return authFetch(`${EducationRoutes.blogs}/${id}`, {
-    method: 'PUT',
-    body: formData,
-  });
+export async function updateBlog(id: string, formData: FormData): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const res = await authFetch(`${EducationRoutes.blogs}/${id}`, {
+      method: 'PUT',
+      body: formData,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return { success: false, error: data?.message ?? `Status ${res.status}` };
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
 }
 
 export async function updateBlogStatus(id: string, status: string): Promise<boolean> {
@@ -125,18 +139,32 @@ export async function updateBlogStatus(id: string, status: string): Promise<bool
 // Podcast CRUD
 // ---------------------------------------------------------------------------
 
-export async function createPodcast(formData: FormData): Promise<Response> {
-  return authFetch(EducationRoutes.podcasts, {
-    method: 'POST',
-    body: formData,
-  });
+export async function createPodcast(formData: FormData): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const res = await authFetch(EducationRoutes.podcasts, {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return { success: false, error: data?.message ?? `Status ${res.status}` };
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
 }
 
-export async function updatePodcast(id: string, formData: FormData): Promise<Response> {
-  return authFetch(`${EducationRoutes.podcasts}/${id}`, {
-    method: 'PUT',
-    body: formData,
-  });
+export async function updatePodcast(id: string, formData: FormData): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const res = await authFetch(`${EducationRoutes.podcasts}/${id}`, {
+      method: 'PUT',
+      body: formData,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return { success: false, error: data?.message ?? `Status ${res.status}` };
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
 }
 
 export async function updatePodcastStatus(id: string, status: string): Promise<boolean> {

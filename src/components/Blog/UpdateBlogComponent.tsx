@@ -254,20 +254,19 @@ const UpdateBlogComponent: React.FC<UpdateBlogComponentProps> = ({ blog }) => {
 
     try {
       setIsLoading(true);
-      const response = await serverUpdateBlog(blog.id, formData);
+      const result = await serverUpdateBlog(blog.id, formData);
 
-      const data = await response.json();
-      if (response.ok) {
-        GlobalNotifier('Blog created successfully', 'success');
-        // router.refresh();
+      if (result.success) {
+        GlobalNotifier('Blog updated successfully', 'success');
         window.location.reload();
+      } else {
+        GlobalNotifier(result.error ?? 'Error updating blog', 'error');
       }
     } catch (err) {
-      console.error('Error creating blog:', err);
-      GlobalNotifier('Error creating blog:', 'error');
+      console.error('Error updating blog:', err);
+      GlobalNotifier('An unexpected error occurred', 'error');
     } finally {
       setIsLoading(false);
-      // router.refresh();
     }
 
     // router.refresh();

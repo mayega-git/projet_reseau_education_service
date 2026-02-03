@@ -111,10 +111,19 @@ export async function getAllPodcastsByAuthorId(
   return (await authFetchJson<PodcastInterface[]>(url.toString())) ?? [];
 }
 
-export async function fetchPodcastById(
-  id: string,
-): Promise<PodcastInterface | null> {
-  return authFetchJson<PodcastInterface>(`${EducationRoutes.podcasts}/${id}`);
+export async function fetchPodcastById(id: string): Promise<PodcastInterface | null> {
+  const [podcast, tags, categories] = await Promise.all([
+    authFetchJson<PodcastInterface>(`${EducationRoutes.podcasts}/${id}`),
+    authFetchJson<string[]>(`${EducationRoutes.podcasts}/${id}/tags`),
+    authFetchJson<string[]>(`${EducationRoutes.podcasts}/${id}/categories`),
+  ]);
+
+  if (!podcast) return null;
+  return {
+    ...podcast,
+    tags: tags ?? [],
+    categories: categories ?? [],
+  };
 }
 
 export async function fetchPodcastImages(
@@ -125,7 +134,7 @@ export async function fetchPodcastImages(
     podcasts.map(async (podcast) => {
       try {
         imageMap[podcast.id] = await authFetchBinary(
-          `${EducationRoutes.podcasts}/${podcast.id}/stream-coverImage`,
+          `${EducationRoutes.podcasts}/${podcast.id}/coverpodcast`,
         );
       } catch (err) {
         console.error(`Error fetching image for podcast ${podcast.id}:`, err);
@@ -141,7 +150,7 @@ export async function fetchPodcastImage(
   const imageMap: Record<string, number[]> = {};
   try {
     imageMap[podcastId] = await authFetchBinary(
-      `${EducationRoutes.podcasts}/${podcastId}/stream-coverImage`,
+      `${EducationRoutes.podcasts}/${podcastId}/coverpodcast`,
     );
   } catch (err) {
     console.error(`Error fetching image for podcast ${podcastId}:`, err);
