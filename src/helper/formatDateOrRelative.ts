@@ -1,5 +1,19 @@
-export const formatDateOrRelative = (dateString: string): string => {
-  const inputDate = new Date(dateString);
+export const formatDateOrRelative = (dateString: any): string => {
+  let inputDate: Date;
+
+  if (Array.isArray(dateString)) {
+    // Handle Spring Boot style date arrays [year, month, day, hour, minute, second]
+    const [year, month, day, hour = 0, minute = 0, second = 0] = dateString;
+    inputDate = new Date(year, month - 1, day, hour, minute, second);
+  } else {
+    inputDate = new Date(dateString);
+  }
+
+  // Check if date is valid
+  if (isNaN(inputDate.getTime())) {
+    return 'Invalid Date';
+  }
+
   const now = new Date();
 
   // Calculate difference in milliseconds & convert to days

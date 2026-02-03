@@ -31,6 +31,11 @@ export default async function BlogPostPageFunction({
   //const BlogImage = await fetchBlogImage(id);
   const UserData = await fetchUserData(BlogPost.authorId);
 
+  // Early return if author data is not found
+  if (!UserData) {
+    return <NotFoundPage />;
+  }
+
   return (
     <div className="flex flex-col justify-between min-h-screen">
       <HeaderWrapper />

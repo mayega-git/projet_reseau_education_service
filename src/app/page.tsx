@@ -17,7 +17,7 @@ import { BlogInterface } from '@/types/blog';
 function BlogFeed() {  // ← Plus de "async" ici
   
   // useState = boîte pour stocker des données
-  // Au début, la boîte est vide : []
+  // Au début, vide : []
   const [allBlogData, setAllBlogData] = useState<BlogInterface[]>([]);
   
   //  useState pour savoir si on charge encore
@@ -25,24 +25,24 @@ function BlogFeed() {  // ← Plus de "async" ici
 
   //  useEffect = "Fais ça APRÈS l'affichage du composant"
   useEffect(() => {
-    console.log('🔵 [BlogFeed] Je commence à charger les blogs');
+    console.log('🔵 [BlogFeed] chargeement les blogs');
     
     // Fonction asynchrone pour charger les blogs
     async function loadBlogs() {
       try {
-        // 🌐 Cette ligne s'exécute DANS LE NAVIGATEUR
+        //  Cette ligne s'exécute DANS LE NAVIGATEUR
         // APRÈS que AuthInitializer ait obtenu le token
         const data = await getAllBlogs('PUBLISHED');
         
         console.log('[BlogFeed] Blogs reçus:', data?.length || 0);
         
-        // 📦 Mettre les données dans la boîte
+        // Mettre les données dans la boîte
         setAllBlogData(data || []);
         
       } catch (err) {
         console.error('❌ [BlogFeed] Erreur:', err);
       } finally {
-        // 📦 Dire qu'on a fini de charger
+        //  Dire qu'on a fini de charger
         setIsLoading(false);
       }
     }

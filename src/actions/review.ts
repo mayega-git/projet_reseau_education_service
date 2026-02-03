@@ -16,13 +16,13 @@ import {
 } from '@/lib/fetchers/review';
 
 export {
-  fetchAllLikesForEntityId,
-  fetchAllDislikesForEntityId,
-  fetchHasLikedStatusByUserId,
-  fetchHasDislikedStatusByUserId,
-  fetchAllCommentsByEntityId,
+  fetchAllLikesForEntityId as fetchLikesCount,
+  fetchAllDislikesForEntityId as fetchDislikesCount,
+  fetchHasLikedStatusByUserId as hasLiked,
+  fetchHasDislikedStatusByUserId as hasDisliked,
+  fetchAllCommentsByEntityId as fetchComments,
   createComment,
   replyComment,
-  fetchAllCommentsRepliesForCommentId,
-  likeOrDislikeEntity,
+  fetchAllCommentsRepliesForCommentId as fetchCommentReplies,
+  likeOrDislikeEntity as likeOrDislike,
 };

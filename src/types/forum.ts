@@ -39,6 +39,7 @@ export interface Post {
 export interface Comment {
   commentaireId: string;
   postId: string;
+  parentCommentId?: string;
   parentId?: string;
   content: string;
   authorId: string;

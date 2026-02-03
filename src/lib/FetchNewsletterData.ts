@@ -1,15 +1,8 @@
-import type {
-  LecteurRegistrationRequest,
-  LecteurResponse,
-  NewsletterCategory,
-  NewsletterCreateRequest,
-  NewsletterResponse,
-  NewsletterStatus,
-} from '@/types/newsletter';
-
-// Server Actions imports
 import {
   fetchNewsletterCategories as fetchNewsletterCategoriesAction,
+  createNewsletterCategory as createNewsletterCategoryAction,
+  updateNewsletterCategory as updateNewsletterCategoryAction,
+  deleteNewsletterCategory as deleteNewsletterCategoryAction,
   fetchNewslettersByStatus as fetchNewslettersByStatusAction,
   fetchNewslettersByRedacteur as fetchNewslettersByRedacteurAction,
   createNewsletter as createNewsletterAction,
@@ -22,171 +15,168 @@ import {
   subscribeLecteurToCategories as subscribeLecteurToCategoriesAction,
   fetchLecteurPreferences as fetchLecteurPreferencesAction,
   updateLecteurCategories as updateLecteurCategoriesAction,
+  fetchRedacteurRequests as fetchRedacteurRequestsAction,
+  fetchRedacteurByEmail as fetchRedacteurByEmailAction,
+  approveRedacteurRequest as approveRedacteurRequestAction,
+  rejectRedacteurRequest as rejectRedacteurRequestAction,
+  submitRedacteurRequest as submitRedacteurRequestAction,
+  fetchRedacteurRequestStatus as fetchRedacteurRequestStatusAction,
 } from '@/actions/newsletter';
+import type {
+  LecteurRegistrationRequest,
+  LecteurResponse,
+  NewsletterCategory,
+  NewsletterCreateRequest,
+  NewsletterResponse,
+  NewsletterStatus,
+  RedacteurRequestResponse,
+  RedacteurRequestSubmission,
+  RedacteurResponse,
+} from '@/types/newsletter';
 
+/**
+ * Categories
+ */
 
-export const fetchNewsletterCategories = async (): Promise<
-  NewsletterCategory[]
-> => {
-  try {
-    return await fetchNewsletterCategoriesAction();
-  } catch (error) {
-    console.error('Failed to fetch newsletter categories.', error);
-    return [];
-  }
+export const fetchNewsletterCategories = async (): Promise<NewsletterCategory[]> => {
+  return fetchNewsletterCategoriesAction();
 };
+
+export const createNewsletterCategory = async (
+  payload: Pick<NewsletterCategory, 'nom' | 'description'>
+): Promise<NewsletterCategory | null> => {
+  return createNewsletterCategoryAction(payload);
+};
+
+export const updateNewsletterCategory = async (
+  categoryId: string,
+  payload: Pick<NewsletterCategory, 'nom' | 'description'>
+): Promise<NewsletterCategory | null> => {
+  return updateNewsletterCategoryAction(categoryId, payload);
+};
+
+export const deleteNewsletterCategory = async (categoryId: string): Promise<boolean> => {
+  return deleteNewsletterCategoryAction(categoryId);
+};
+
+/**
+ * Newsletters
+ */
 
 export const fetchNewslettersByStatus = async (
   status?: NewsletterStatus
 ): Promise<NewsletterResponse[]> => {
-  try {
-    return await fetchNewslettersByStatusAction(status);
-  } catch (error) {
-    console.error('Failed to fetch newsletters by status.', error);
-    return [];
-  }
+  return fetchNewslettersByStatusAction(status);
 };
 
 export const fetchNewslettersByRedacteur = async (
   redacteurId: string
 ): Promise<NewsletterResponse[]> => {
-  if (!redacteurId) return [];
-
-  try {
-    return await fetchNewslettersByRedacteurAction(redacteurId);
-  } catch (error) {
-    console.error('Failed to fetch newsletters by redacteur.', error);
-    return [];
-  }
+  return fetchNewslettersByRedacteurAction(redacteurId);
 };
 
 export const createNewsletter = async (
   redacteurId: string,
   payload: NewsletterCreateRequest
 ): Promise<NewsletterResponse | null> => {
-  if (!redacteurId) return null;
-
-  try {
-    return await createNewsletterAction(redacteurId, payload);
-  } catch (error) {
-    console.error('Failed to create newsletter.', error);
-    return null;
-  }
+  return createNewsletterAction(redacteurId, payload);
 };
 
 export const updateNewsletter = async (
   newsletterId: string,
   payload: NewsletterCreateRequest
 ): Promise<NewsletterResponse | null> => {
-  if (!newsletterId) return null;
-
-  try {
-    return await updateNewsletterAction(newsletterId, payload);
-  } catch (error) {
-    console.error('Failed to update newsletter.', error);
-    return null;
-  }
+  return updateNewsletterAction(newsletterId, payload);
 };
 
 export const submitNewsletter = async (
   newsletterId: string,
   redacteurId: string
 ): Promise<NewsletterResponse | null> => {
-  if (!newsletterId || !redacteurId) return null;
-
-  try {
-    return await submitNewsletterAction(newsletterId, redacteurId);
-  } catch (error) {
-    console.error('Failed to submit newsletter.', error);
-    return null;
-  }
+  return submitNewsletterAction(newsletterId, redacteurId);
 };
 
 export const validateNewsletter = async (
   newsletterId: string
 ): Promise<NewsletterResponse | null> => {
-  if (!newsletterId) return null;
-
-  try {
-    return await validateNewsletterAction(newsletterId);
-  } catch (error) {
-    console.error('Failed to validate newsletter.', error);
-    return null;
-  }
+  return validateNewsletterAction(newsletterId);
 };
 
 export const rejectNewsletter = async (
   newsletterId: string
 ): Promise<NewsletterResponse | null> => {
-  if (!newsletterId) return null;
-
-  try {
-    return await rejectNewsletterAction(newsletterId);
-  } catch (error) {
-    console.error('Failed to reject newsletter.', error);
-    return null;
-  }
+  return rejectNewsletterAction(newsletterId);
 };
 
 export const publishNewsletter = async (
   newsletterId: string
 ): Promise<NewsletterResponse | null> => {
-  if (!newsletterId) return null;
-
-  try {
-    return await publishNewsletterAction(newsletterId);
-  } catch (error) {
-    console.error('Failed to publish newsletter.', error);
-    return null;
-  }
+  return publishNewsletterAction(newsletterId);
 };
+
+/**
+ * Lecteurs
+ */
 
 export const registerLecteur = async (
   payload: LecteurRegistrationRequest
 ): Promise<LecteurResponse | null> => {
-  try {
-    return await registerLecteurAction(payload);
-  } catch (error) {
-    console.error('Failed to register lecteur.', error);
-    return null;
-  }
+  return registerLecteurAction(payload);
 };
 
 export const subscribeLecteurToCategories = async (
   lecteurId: string,
   categorieIds: string[]
 ): Promise<LecteurResponse | null> => {
-  try {
-    return await subscribeLecteurToCategoriesAction(lecteurId, categorieIds);
-  } catch (error) {
-    console.error('Failed to subscribe lecteur to categories.', error);
-    return null;
-  }
+  return subscribeLecteurToCategoriesAction(lecteurId, categorieIds);
 };
 
 export const fetchLecteurPreferences = async (
   lecteurId: string
 ): Promise<LecteurResponse | null> => {
-  if (!lecteurId) return null;
-
-  try {
-    return await fetchLecteurPreferencesAction(lecteurId);
-  } catch (error) {
-    console.error('Failed to fetch lecteur preferences.', error);
-    return null;
-  }
+  return fetchLecteurPreferencesAction(lecteurId);
 };
 
 export const updateLecteurCategories = async (
   lecteurId: string,
   categorieIds: string[]
 ): Promise<LecteurResponse | null> => {
-  if (!lecteurId) return null;
+  return updateLecteurCategoriesAction(lecteurId, categorieIds);
+};
 
-  try {
-    return await updateLecteurCategoriesAction(lecteurId, categorieIds);
-  } catch (error) {
-    console.error('Failed to update lecteur categories.', error);
-    return null;
-  }
+/**
+ * Redacteurs
+ */
+
+export const fetchRedacteurRequests = async (): Promise<RedacteurRequestResponse[]> => {
+  return fetchRedacteurRequestsAction();
+};
+
+export const fetchRedacteurByEmail = async (email: string): Promise<RedacteurResponse | null> => {
+  return fetchRedacteurByEmailAction(email);
+};
+
+export const approveRedacteurRequest = async (
+  requestId: string
+): Promise<RedacteurRequestResponse | null> => {
+  return approveRedacteurRequestAction(requestId);
+};
+
+export const rejectRedacteurRequest = async (
+  requestId: string,
+  reason: string
+): Promise<RedacteurRequestResponse | null> => {
+  return rejectRedacteurRequestAction(requestId, reason);
+};
+
+export const submitRedacteurRequest = async (
+  payload: RedacteurRequestSubmission
+): Promise<RedacteurRequestResponse | null> => {
+  return submitRedacteurRequestAction(payload);
+};
+
+export const fetchRedacteurRequestStatus = async (
+  requestId: string
+): Promise<RedacteurRequestResponse | null> => {
+  return fetchRedacteurRequestStatusAction(requestId);
 };

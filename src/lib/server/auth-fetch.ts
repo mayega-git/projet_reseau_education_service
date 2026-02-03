@@ -19,6 +19,9 @@ export async function authFetch(
   url: string,
   options: RequestInit = {},
 ): Promise<Response> {
+  // Debug log to verify the exact URL being requested
+  console.log('🌐 [authFetch] Requesting:', url);
+  
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('accessToken')?.value;
 
@@ -56,7 +59,14 @@ export async function authFetchJson<T>(
 ): Promise<T | null> {
   const res = await authFetch(url, options);
   if (!res.ok) return null;
-  return res.json() as Promise<T>;
+
+  const contentType = res.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return res.json() as Promise<T>;
+  }
+
+  // If not JSON, return null or potentially the text if T allows it
+  return null;
 }
 
 /**
@@ -70,11 +80,16 @@ export async function authFetchData<T>(
   const res = await authFetch(url, options);
   if (!res.ok) return null;
 
-  const json = await res.json();
-  if (json && typeof json === 'object' && 'data' in json) {
-    return json.data as T;
+  const contentType = res.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    const json = await res.json();
+    if (json && typeof json === 'object' && 'data' in json) {
+      return json.data as T;
+    }
+    return json as T;
   }
-  return json as T;
+
+  return null;
 }
 
 /**

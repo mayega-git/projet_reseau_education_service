@@ -16,6 +16,7 @@ import {
 // ---------------------------------------------------------------------------
 
 interface AuthContextType {
+  
   /** Decoded user info (from the HttpOnly cookie) — null when not logged in */
   user: User | null;
   /** User roles shortcut */

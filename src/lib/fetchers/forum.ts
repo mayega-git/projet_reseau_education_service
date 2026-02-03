@@ -9,6 +9,23 @@ import { authFetch } from '@/lib/server/auth-fetch';
 // Normalizers (unchanged business logic from the original ForumAPI class)
 // ---------------------------------------------------------------------------
 
+function normalizeDate(rawDate: unknown): string {
+  if (!rawDate) return '';
+  if (typeof rawDate === 'number') {
+    // If timestamp is in seconds (less than 10^12), convert to milliseconds
+    const dateVal = rawDate < 10000000000 ? rawDate * 1000 : rawDate;
+    return new Date(dateVal).toISOString();
+  }
+  return String(rawDate);
+}
+
+function normalizeGroup(group: Record<string, unknown>): DiscussionGroup {
+  return {
+    ...(group as unknown as DiscussionGroup),
+    createdAt: normalizeDate(group.creationDate ?? group.createdAt),
+  };
+}
+
 function normalizePost(post: Record<string, unknown>): Post {
   const authorName =
     (post.authorName as string) ||
@@ -23,7 +40,7 @@ function normalizePost(post: Record<string, unknown>): Post {
     ...(post as unknown as Post),
     likes: (post.numberOfLikes ?? post.likes ?? 0) as number,
     dislikes: (post.numberOfDislikes ?? post.dislikes ?? 0) as number,
-    createdAt: (post.creationDate ?? post.createdAt) as string,
+    createdAt: normalizeDate(post.creationDate ?? post.createdAt),
     authorName: authorName as string,
   };
 }
@@ -40,7 +57,7 @@ function normalizeComment(comment: Record<string, unknown>): Comment {
 
   return {
     ...(comment as unknown as Comment),
-    createdAt: (comment.creationDate ?? comment.createdAt) as string,
+    createdAt: normalizeDate(comment.creationDate ?? comment.createdAt),
     authorName: authorName as string,
     replies: Array.isArray(comment.replies)
       ? (comment.replies as Record<string, unknown>[]).map(normalizeComment)
@@ -78,12 +95,13 @@ async function forumFetch<T>(
 // ---------------------------------------------------------------------------
 
 export async function getValidatedGroups(): Promise<DiscussionGroup[]> {
-  const all = await forumFetch<DiscussionGroup[]>('/groups/all');
-  return all.filter((g) => g.status === 'VALIDATED');
+  const all = await forumFetch<Record<string, unknown>[]>('/groups/all');
+  return all.map(normalizeGroup).filter((g) => g.status === 'VALIDATED');
 }
 
 export async function getAllGroups(): Promise<DiscussionGroup[]> {
-  return forumFetch('/groups/all');
+  const all = await forumFetch<Record<string, unknown>[]>('/groups/all');
+  return all.map(normalizeGroup);
 }
 
 export async function validateGroup(groupId: string): Promise<void> {
@@ -103,11 +121,12 @@ export async function createGroup(
   description: string,
   creatorId: string,
 ): Promise<DiscussionGroup> {
-  return forumFetch('/groups', {
+  const group = await forumFetch<Record<string, unknown>>('/groups', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, description, type: 'FORUM', creatorId }),
   });
+  return normalizeGroup(group);
 }
 
 // ---------------------------------------------------------------------------

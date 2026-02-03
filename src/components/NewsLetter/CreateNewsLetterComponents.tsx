@@ -14,7 +14,7 @@ import {
   fetchNewsletterCategories,
   submitNewsletter,
   updateNewsletter,
-} from '@/actions/newsletter';
+} from '@/lib/FetchNewsletterData';
 import type {
   NewsletterCategory,
   NewsletterCreateRequest,
@@ -75,6 +75,7 @@ const CreateNewsLetterComponents = ({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [redacteurId, setRedacteurId] = useState('');
 
   const categoryChoices: TagInterface[] = useMemo(
     () =>
@@ -104,6 +105,13 @@ const CreateNewsLetterComponents = ({
     };
 
     loadCategories();
+  }, []);
+
+  useEffect(() => {
+    const storedId = localStorage.getItem('newsletterRedacteurId') || '';
+    if (storedId) {
+      setRedacteurId(storedId);
+    }
   }, []);
 
   useEffect(() => {
@@ -137,7 +145,8 @@ const CreateNewsLetterComponents = ({
   };
 
   const handleCreate = async () => {
-    if (!user?.id) {
+    const activeRedacteurId = user?.id || redacteurId;
+    if (!activeRedacteurId) {
       GlobalNotifier('Utilisateur non authentifie.', 'error');
       return;
     }
@@ -151,7 +160,7 @@ const CreateNewsLetterComponents = ({
     };
 
     setIsLoading(true);
-    const result = await createNewsletter(user.id, payload);
+    const result = await createNewsletter(activeRedacteurId, payload);
     setIsLoading(false);
 
     if (!result) {
@@ -191,12 +200,16 @@ const CreateNewsLetterComponents = ({
   };
 
   const handleSubmitNewsletter = async () => {
-    if (!user?.id || !initialNewsletter?.id) {
+    const activeRedacteurId = user?.id || redacteurId;
+    if (!activeRedacteurId || !initialNewsletter?.id) {
       GlobalNotifier('Newsletter invalide.', 'error');
       return;
     }
 
-    const result = await submitNewsletter(initialNewsletter.id, user.id);
+    const result = await submitNewsletter(
+      initialNewsletter.id,
+      activeRedacteurId
+    );
     if (!result) {
       GlobalNotifier('Soumission impossible.', 'error');
       return;

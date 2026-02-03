@@ -46,6 +46,7 @@ const BlogProfileCard: React.FC<BlogProfileCardInterface> = ({
       {post?.length > 0 ? (
         <div className="bg-white rounded-lg w-full shadow-md ">
           {[...post]
+            .filter((p) => p.authorId === userData.id)
             .sort(
               (a, b) =>
                 new Date(b.createdAt).getTime() -

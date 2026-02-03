@@ -5,6 +5,9 @@
 
 import {
   fetchNewsletterCategories,
+  createNewsletterCategory,
+  updateNewsletterCategory,
+  deleteNewsletterCategory,
   fetchNewslettersByStatus,
   fetchNewslettersByRedacteur,
   createNewsletter,
@@ -17,10 +20,19 @@ import {
   subscribeLecteurToCategories,
   fetchLecteurPreferences,
   updateLecteurCategories,
+  fetchRedacteurRequests,
+  fetchRedacteurByEmail,
+  approveRedacteurRequest,
+  rejectRedacteurRequest,
+  submitRedacteurRequest,
+  fetchRedacteurRequestStatus,
 } from '@/lib/fetchers/newsletter';
 
 export {
   fetchNewsletterCategories,
+  createNewsletterCategory,
+  updateNewsletterCategory,
+  deleteNewsletterCategory,
   fetchNewslettersByStatus,
   fetchNewslettersByRedacteur,
   createNewsletter,
@@ -33,4 +45,10 @@ export {
   subscribeLecteurToCategories,
   fetchLecteurPreferences,
   updateLecteurCategories,
+  fetchRedacteurRequests,
+  fetchRedacteurByEmail,
+  approveRedacteurRequest,
+  rejectRedacteurRequest,
+  submitRedacteurRequest,
+  fetchRedacteurRequestStatus,
 };

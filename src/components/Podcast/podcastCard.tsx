@@ -15,10 +15,11 @@ import { entityType } from '@/constants/entityType';
 import ViewsButton from '../ui/ViewsButton';
 import AddToFavoritiesButton from '../ui/AddToFavoritiesButton';
 import ShareButton2 from '../ui/ShareButton';
+import PodcastCoverImage from './PodcastCoverImage';
 
 interface PodcastCardProps {
   data: PodcastInterface[];
-  images: {
+  images?: {
     [key: string]: number[];
   };
 }
@@ -37,28 +38,26 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ data, images }) => {
         >
           <Link href={`/podcast/${podcast.id}`}>
             <div className="h-[300px]">
-              {images[podcast.id] &&
-                // Convert the binary data to a Base64 string if necessary
+              {images && images[podcast.id] ? (
                 (() => {
                   const currentImage = images[podcast.id];
-                  // Buffer from the binary data (if it's not already Base64)
                   const binaryData =
-                    Buffer.from(currentImage).toString('base64'); // Convert to Base64 string
-
-                  // Create a Data URL (Base64 URL) from the binary data
-                  const base64ImageUrl = `data:image/jpeg;base64,${binaryData}`; // Adjust MIME type if needed
+                    Buffer.from(currentImage).toString('base64');
+                  const base64ImageUrl = `data:image/jpeg;base64,${binaryData}`;
 
                   return (
                     <Image
-                      src={base64ImageUrl} // Use the Base64 image string as the source
+                      src={base64ImageUrl}
                       alt={podcast.title}
                       width={1200}
                       height={100}
                       className="rounded-lg object-cover w-full h-full"
-                      // layout="responsive"
                     />
                   );
-                })()}
+                })()
+              ) : (
+                <PodcastCoverImage podcastId={podcast.id} />
+              )}
             </div>
           </Link>
           <div className="flex flex-col gap-3">

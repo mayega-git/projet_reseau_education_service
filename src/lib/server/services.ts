@@ -5,13 +5,13 @@
 // migration period so existing .env files keep working.
 
 export const ServiceURLs = {
-  education: process.env.EDUCATION_API_URL ?? process.env.NEXT_PUBLIC_EDUCATION_API ?? '',
-  user: process.env.USER_API_URL ?? process.env.NEXT_PUBLIC_USER_API ?? '',
-  review: process.env.REVIEW_API_URL ?? process.env.NEXT_PUBLIC_REVIEW_API ?? '',
-  organisation: process.env.ORGANISATION_API_URL ?? process.env.NEXT_PUBLIC_ORGANISATION_API ?? '',
-  newsletter: process.env.NEWSLETTER_API_URL ?? process.env.NEXT_PUBLIC_NEWSLETTER_API ?? '',
-  forum: process.env.FORUM_API_URL ?? process.env.NEXT_PUBLIC_FORUM_URL ?? '',
-  gateway: process.env.GATEWAY_API_URL ?? process.env.NEXT_PUBLIC_GATEWAY_URL ?? '',
+  education: process.env.NEXT_PUBLIC_EDUCATION_URL ?? '',
+  user:  process.env.NEXT_PUBLIC_USER_URL ?? '',
+  review:  process.env.NEXT_PUBLIC_REVIEW_URL ?? '',
+  organisation: process.env.NEXT_PUBLIC_ORGANISATION_URL ?? '',
+  newsletter: process.env.NEXT_PUBLIC_NEWSLETTER_URL ?? '',
+  forum: process.env.NEXT_PUBLIC_FORUM_URL ?? '',
+  gateway: process.env.NEXT_PUBLIC_GATEWAY_URL ?? '',
 };
 
 // Convenience route builders — mirrors the old api.ts but with server-only URLs
@@ -38,7 +38,7 @@ export const EducationRoutes = {
 };
 
 export const ReviewRoutes = {
-  ratings: `${ServiceURLs.review}/ratings`,
+  ratings: `${ServiceURLs.review}`,
   comments: `${ServiceURLs.review}/comments`,
   commentReply: `${ServiceURLs.review}/comment_replies`,
   entityStats: `${ServiceURLs.review}/entity/stats`,
@@ -54,8 +54,17 @@ export const NewsletterRoutes = {
   lecteurs: `${ServiceURLs.newsletter}/lecteurs`,
   lecteursRegister: `${ServiceURLs.newsletter}/lecteurs/register`,
   newsletters: `${ServiceURLs.newsletter}/newsletters/newsletters`,
+    redacteursRequest: `${ServiceURLs.newsletter}/redacteurs/request`,
+  redacteursAdminRequests: `${ServiceURLs.newsletter}/admin/redacteurs/requests`,
+  redacteurs: `${ServiceURLs.newsletter}/redacteurs`,
+  redacteursByEmail: `${ServiceURLs.newsletter}/redacteurs/email`,
+
 };
 
 export const ForumRoutes = {
-  base: ServiceURLs.forum,
+  base: `${ServiceURLs.forum}`,
+  categorie : `${ServiceURLs.forum}/categories`,
+  posts : `${ServiceURLs.forum}/posts`,
+  comments : `${ServiceURLs.forum}/commentaires`,
 };
+

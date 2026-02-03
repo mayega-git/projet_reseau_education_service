@@ -8,9 +8,12 @@ import {
   NewsletterCreateRequest,
   NewsletterResponse,
   NewsletterStatus,
+  RedacteurRequestResponse,
+  RedacteurRequestSubmission,
+  RedacteurResponse,
 } from '@/types/newsletter';
 import { NewsletterRoutes } from '@/lib/server/services';
-import { authFetch, authFetchJson } from '@/lib/server/auth-fetch';
+import { authFetch, authFetchData, authFetchJson } from '@/lib/server/auth-fetch';
 
 // Helper to unwrap { data: T } envelope used by newsletter service
 async function unwrap<T>(res: Response): Promise<T | null> {
@@ -21,9 +24,39 @@ async function unwrap<T>(res: Response): Promise<T | null> {
 }
 
 export async function fetchNewsletterCategories(): Promise<NewsletterCategory[]> {
-  const res = await authFetch(NewsletterRoutes.categories);
-  const data = await unwrap<NewsletterCategory[]>(res);
-  return Array.isArray(data) ? data : [];
+  return (await authFetchData<NewsletterCategory[]>(NewsletterRoutes.categories)) ?? [];
+}
+
+export async function createNewsletterCategory(
+  payload: Pick<NewsletterCategory, 'nom' | 'description'>,
+): Promise<NewsletterCategory | null> {
+  return authFetchData<NewsletterCategory>(NewsletterRoutes.categories, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateNewsletterCategory(
+  categoryId: string,
+  payload: Pick<NewsletterCategory, 'nom' | 'description'>,
+): Promise<NewsletterCategory | null> {
+  if (!categoryId) return null;
+  const url = new URL(`${NewsletterRoutes.categories}/${categoryId}`);
+  if (payload.description) url.searchParams.set('description', payload.description);
+  if (payload.nom) url.searchParams.set('nom', payload.nom);
+  return authFetchData<NewsletterCategory>(url.toString(), {
+    method: 'PUT',
+  });
+}
+
+export async function deleteNewsletterCategory(
+  categoryId: string,
+): Promise<boolean> {
+  if (!categoryId) return false;
+  const res = await authFetch(`${NewsletterRoutes.categories}/${categoryId}`, {
+    method: 'DELETE',
+  });
+  return res.ok;
 }
 
 export async function fetchNewslettersByStatus(
@@ -164,4 +197,47 @@ export async function updateLecteurCategories(
     },
   );
   return unwrap<LecteurResponse>(res);
+}
+
+// ---------------------------------------------------------------------------
+// Redacteurs
+// ---------------------------------------------------------------------------
+
+export async function fetchRedacteurRequests(): Promise<RedacteurRequestResponse[]> {
+  return (await authFetchData<RedacteurRequestResponse[]>(NewsletterRoutes.redacteursAdminRequests)) ?? [];
+}
+
+export async function fetchRedacteurByEmail(email: string): Promise<RedacteurResponse | null> {
+  if (!email) return null;
+  const url = new URL(NewsletterRoutes.redacteursByEmail);
+  url.searchParams.set('email', email);
+  return authFetchData<RedacteurResponse>(url.toString());
+}
+
+export async function approveRedacteurRequest(requestId: string): Promise<RedacteurRequestResponse | null> {
+  if (!requestId) return null;
+  return authFetchData<RedacteurRequestResponse>(
+    `${NewsletterRoutes.redacteursAdminRequests}/${requestId}/approve`,
+    { method: 'POST', body: JSON.stringify({}) }
+  );
+}
+
+export async function rejectRedacteurRequest(requestId: string, reason: string): Promise<RedacteurRequestResponse | null> {
+  if (!requestId) return null;
+  return authFetchData<RedacteurRequestResponse>(
+    `${NewsletterRoutes.redacteursAdminRequests}/${requestId}/reject`,
+    { method: 'POST', body: JSON.stringify({ reason }) }
+  );
+}
+
+export async function submitRedacteurRequest(payload: RedacteurRequestSubmission): Promise<RedacteurRequestResponse | null> {
+  return authFetchData<RedacteurRequestResponse>(
+    NewsletterRoutes.redacteursRequest,
+    { method: 'POST', body: JSON.stringify(payload) }
+  );
+}
+
+export async function fetchRedacteurRequestStatus(requestId: string): Promise<RedacteurRequestResponse | null> {
+  if (!requestId) return null;
+  return authFetchData<RedacteurRequestResponse>(`${NewsletterRoutes.redacteursRequest}/${requestId}`);
 }

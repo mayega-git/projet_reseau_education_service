@@ -1,8 +1,8 @@
 // src/middleware.ts
 // Centralised Next.js middleware that handles:
-//   1. Gateway token lifecycle (init on first visit, proactive refresh)
-//   2. Route protection for authenticated areas (/u/*)
-//   3. Redirect already-authenticated users away from /auth/* pages
+//    Gateway token lifecycle (init on first visit, proactive refresh)
+//  Route protection for authenticated areas (/u/*)
+//    Redirect already-authenticated users away from /auth/* pages
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
@@ -10,6 +10,8 @@ import {
   initGatewayToken,
   refreshGatewayToken,
   isTokenExpiringSoon,
+  shouldReinit,
+  getAuthConfigHash,
   TOKEN_LIFETIME_MS,
 } from '@/lib/server/token-manager';
 
@@ -37,7 +39,13 @@ function setTokenCookies(
     maxAge: 60 * 60 * 5, // 5 h
   });
   
-  console.log('🍪 [Middleware] Cookies set.');
+  // Set the config hash so we know which API key these tokens belong to
+  response.cookies.set('authConfigHash', getAuthConfigHash(), {
+    ...COOKIE_OPTIONS,
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+  });
+  
+  console.log('🍪 [Middleware] Cookies set (access, refresh, hash).');
 }
 
 export async function middleware(request: NextRequest) {
@@ -57,8 +65,20 @@ export async function middleware(request: NextRequest) {
   // ---------------------------------------------------------------
   // 1. GATEWAY TOKEN – ensure a valid accessToken cookie exists
   // ---------------------------------------------------------------
-  const accessToken = request.cookies.get('accessToken')?.value;
-  const refreshToken = request.cookies.get('refreshToken')?.value;
+  let accessToken = request.cookies.get('accessToken')?.value;
+  let refreshToken = request.cookies.get('refreshToken')?.value;
+  const authConfigHash = request.cookies.get('authConfigHash')?.value;
+
+  // Check if server config (API_KEY / CLIENT_ID) has changed
+  if (shouldReinit(authConfigHash)) {
+      console.log('⚠️ [Middleware] API Config changed or missing hash. Forcing re-init...');
+      // Clear local variables to force the "No token" logic below
+      accessToken = undefined;
+      refreshToken = undefined;
+      // Note: We don't explicitly delete cookies here because setTokenCookies will overwrite them,
+      // or if init fails, we might want to let them die naturally. 
+      // But to be clean, we'll let the init logic handle obtaining new ones.
+  }
 
   console.log('🚦 [Middleware] Cookies state:', {
     hasAccessToken: !!accessToken,

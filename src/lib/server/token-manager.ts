@@ -17,6 +17,30 @@ export interface TokenPair {
 }
 
 /**
+ * Generates a simple hash/signature of the current API configuration.
+ * Used to detect if the server-side API_KEY or CLIENT_ID has changed.
+ */
+export function getAuthConfigHash(): string {
+  // Simple Base64 of the combined keys is sufficient to detect changes.
+  // We aren't hiding this from the client (cookies are HttpOnly), but even if we were,
+  // this is just for change detection.
+  if (typeof btoa === 'function') {
+      return btoa(`${API_KEY}:${CLIENT_ID}`);
+  } else {
+      return Buffer.from(`${API_KEY}:${CLIENT_ID}`).toString('base64');
+  }
+}
+
+/**
+ * Checks if the provided client-side config hash matches the current server config.
+ */
+export function shouldReinit(clientHash: string | undefined): boolean {
+  const currentHash = getAuthConfigHash();
+  // If no client hash (first visit) or mismatch -> re-init
+  return !clientHash || clientHash !== currentHash;
+}
+
+/**
  * First-connection flow: obtains an initial gateway token pair.
  * Uses X-API-KEY-GATEWAY + X-API-KEY-GATEWAY-CLIENT headers.
  */
@@ -70,7 +94,7 @@ export async function refreshGatewayToken(
 ): Promise<TokenPair | null> {
   try {
     const res = await fetch(
-      `${ServiceURLs.gateway}/education-service/apikeygateway/refresh`,
+      `${ServiceURLs.gateway}/apikeygateway/refresh`,
       {
         method: 'POST',
         headers: {

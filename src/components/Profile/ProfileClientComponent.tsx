@@ -31,6 +31,8 @@ import ShareButtons from '../ui/ShareButtons';
 import ShareButton2 from '../ui/ShareButton';
 import BlogProfileCard from '../Blog/BlogProfileCard';
 import PodcastProfileCard from '../Podcast/PodcastProfileCard';
+import BlogCard from '../Blog/blogCard';
+import PodcastCard from '../Podcast/podcastCard';
 import { AppRoles } from '@/constants/roles';
 import UpdateUserForm from '../AuthForms/UpdateUserForm';
 
@@ -331,6 +333,43 @@ export default function ProfileClientComponent({
                           Editer mes categories
                         </Button>
                       </Link>
+                    </div>
+                    <div className="rounded-lg border border-grey-100 p-4 bg-gray-50">
+
+
+                      <p className="paragraph-medium-medium">
+
+
+                        Redacteur
+
+
+                      </p>
+
+
+                      <p className="paragraph-small-normal text-black-300 mt-1">
+
+
+                        Deviens redacteur pour creer et gerer des newsletters.
+
+
+                      </p>
+
+
+                      <Link href="/newsletter/redacteur">
+
+
+                        <Button variant="outline" className="mt-3">
+
+
+                          Demander l'acces redacteur
+
+
+                        </Button>
+
+
+                      </Link>
+
+
                     </div>
                   </div>
                 )}

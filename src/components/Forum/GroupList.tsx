@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import GroupCard from './GroupCard';
 import type { DiscussionGroup } from '@/types/forum';
 import { createGroup } from '@/actions/forum';
+import { api } from '@/lib/FetchFromForum';
 
 interface GroupsListProps {
   initialGroups: DiscussionGroup[];
@@ -17,7 +18,7 @@ export default function GroupsList({ initialGroups, onGroupClick, onGroupsUpdate
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, token } = useAuth();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,16 +51,16 @@ export default function GroupsList({ initialGroups, onGroupClick, onGroupsUpdate
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-6 py-3 bg-primary-purple-600 text-white rounded-lg hover:bg-primary-purple-700 transition-all font-semibold shadow-sm hover:shadow-md"
+          className="flex items-center gap-2 px-6 py-3 bg-primary-purple-600 text-black-500 rounded-lg hover:bg-primary-purple-700 transition-all font-semibold shadow-sm hover:shadow-md"
         >
           <Plus className="w-5 h-5" />
-          Proposer un forum
+          Creer un forum
         </button>
       </div>
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-grey-50 rounded-2xl border border-grey-200 p-8 mb-10 shadow-inner animate-in fade-in slide-in-from-top-4 duration-300">
-          <h3 className="h4-bold text-black-500 mb-6">Nouveau Forum</h3>
+          <h3 className="h4-bold text-black-800 mb-6">Nouveau Forum</h3>
           {error && <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">{error}</div>}
 
           <div className="mb-4">
@@ -85,7 +86,7 @@ export default function GroupsList({ initialGroups, onGroupClick, onGroupsUpdate
           </div>
 
           <div className="flex gap-4">
-            <button type="submit" className="px-8 py-2.5 bg-primary-purple-600 text-white rounded-lg hover:bg-primary-purple-700 font-semibold shadow-sm transition-all">
+            <button type="submit" className="px-8 py-2.5 bg-primary-purple-600 text-black-300 rounded-lg hover:bg-primary-purple-700 font-semibold shadow-sm transition-all">
               Soumettre
             </button>
             <button

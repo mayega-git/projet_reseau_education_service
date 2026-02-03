@@ -67,7 +67,7 @@ const Header1 = () => {
                     variant="primary"
                     round={true}
                   >
-                    Déconnexion
+                    Sign out
                   </CustomButton>
                 </li>
               </>

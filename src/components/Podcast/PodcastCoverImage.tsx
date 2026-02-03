@@ -1,8 +1,8 @@
 'use client';
-import { fetchBlogImage } from '@/actions/blog';
+import { fetchPodcastImage } from '@/actions/blog';
 import { useEffect, useState } from 'react';
 
-export default function BlogCoverImage({ blogId }: { blogId: string }) {
+export default function PodcastCoverImage({ podcastId }: { podcastId: string }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -14,30 +14,26 @@ export default function BlogCoverImage({ blogId }: { blogId: string }) {
       try {
         setLoading(true);
         setError(false);
-        const imageMap = await fetchBlogImage(blogId);
+        const imageMap = await fetchPodcastImage(podcastId);
         
-        // Log the raw result to debug
-        console.log(`[BlogCoverImage] Data for ${blogId}:`, imageMap);
-
-        const binaryData = imageMap[blogId];
+        const binaryData = imageMap[podcastId];
 
         if (binaryData && binaryData.length > 0) {
           const blob = new Blob([new Uint8Array(binaryData)], { type: 'image/jpeg' });
           currentUrl = URL.createObjectURL(blob);
           setImageUrl(currentUrl);
         } else {
-          console.warn(`[BlogCoverImage] No binary data for ${blogId}`);
           setImageUrl(null);
         }
       } catch (err) {
-        console.error(`[BlogCoverImage] Error for ${blogId}:`, err);
+        console.error(`[PodcastCoverImage] Error for ${podcastId}:`, err);
         setError(true);
       } finally {
         setLoading(false);
       }
     };
 
-    if (blogId) {
+    if (podcastId) {
       loadImage();
     }
 
@@ -46,27 +42,24 @@ export default function BlogCoverImage({ blogId }: { blogId: string }) {
         URL.revokeObjectURL(currentUrl);
       }
     };
-  }, [blogId]);
+  }, [podcastId]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center bg-gray-100" style={{ width: 900, height: 250 }}>
+      <div className="flex items-center justify-center bg-gray-100 h-full w-full rounded-lg">
         Chargement...
       </div>
     );
   }
 
-  // More robust check for "no image"
   const hasNoImage = error || !imageUrl || imageUrl === 'null' || imageUrl === '';
 
   if (hasNoImage) {
-    console.log(`[BlogCoverImage] Rendering fallback for ${blogId}. imageUrl:`, imageUrl);
     return (
       <img
         src="/Gemini_Blog_Default_Cover.png"
         alt="Image par défaut"
-        className="object-cover"
-        style={{ width: 900, height: 300 }}
+        className="object-cover w-full h-full rounded-lg"
       />
     );
   }
@@ -75,8 +68,7 @@ export default function BlogCoverImage({ blogId }: { blogId: string }) {
     <img
       src={imageUrl}
       alt="Image de couverture"
-      className="object-cover"
-      style={{ width: 900, height: 250 }}
+      className="object-cover w-full h-full rounded-lg"
     />
   );
 }

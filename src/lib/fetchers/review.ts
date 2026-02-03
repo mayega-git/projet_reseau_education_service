@@ -88,7 +88,5 @@ export async function likeOrDislikeEntity(
   url.searchParams.set('entityType', params.entityType);
   url.searchParams.set('isLike', params.isLike.toString());
 
-  const res = await authFetch(url.toString(), { method: 'POST' });
-  if (!res.ok) return null;
-  return res.json();
+  return authFetchJson<unknown>(url.toString(), { method: 'POST' });
 }

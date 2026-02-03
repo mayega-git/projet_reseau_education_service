@@ -8,7 +8,8 @@ import SidebarPageHeading from '@/components/ui/SidebarPageHeading';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import NewsletterDataTable from '@/components/DataTable/NewsletterDataTable';
 import { useAuth } from '@/context/AuthContext';
-import { fetchNewslettersByRedacteur } from '@/actions/newsletter';
+import RedacteurAccessGuard from '@/components/NewsLetter/RedacteurAccesGuard';
+import { fetchNewslettersByRedacteur } from '@/lib/FetchNewsletterData';
 import type { NewsletterResponse } from '@/types/newsletter';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -18,58 +19,69 @@ const NewsletterDashboard = () => {
   const router = useRouter();
   const [newsletters, setNewsletters] = useState<NewsletterResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [redacteurId, setRedacteurId] = useState('');
+
+  useEffect(() => {
+    const storedId = localStorage.getItem('newsletterRedacteurId') || '';
+    if (storedId) {
+      setRedacteurId(storedId);
+    }
+  }, []);
 
   const loadNewsletters = async () => {
-    if (!user?.id) {
+    const activeRedacteurId = user?.id || redacteurId;
+    if (!activeRedacteurId) {
       setLoading(false);
       return;
     }
-    const data = await fetchNewslettersByRedacteur(user.id);
+    const data = await fetchNewslettersByRedacteur(activeRedacteurId);
     setNewsletters(data);
     setLoading(false);
   };
 
   useEffect(() => {
     loadNewsletters();
-  }, [user?.id]);
+  }, [redacteurId, user?.id]);
 
   return (
-    <div className="w-full flex flex-col justify-between min-h-screen">
-      <HeaderWrapper />
-      <NavTabsNewsLetter />
-      <div className="container py-6 flex-1">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <SidebarPageHeading
-            title="Newsletters"
-            subtitle="Gere et soumets tes newsletters."
-          />
-          <Button onClick={() => router.push('/newsletter/create')}>
-            Create Newsletter
-          </Button>
-        </div>
-
-        {loading ? (
-          <p className="paragraph-medium-normal text-black-300 mt-6">
-            Chargement...
-          </p>
-        ) : newsletters.length === 0 ? (
-          <div className="mt-8">
-            <EmptyState />
-          </div>
-        ) : (
-          <div className="mt-8">
-            <NewsletterDataTable
-              data={newsletters}
-              variant="redacteur"
-              redacteurId={user?.id}
-              onRefresh={loadNewsletters}
-              onEdit={(id) => router.push(`/newsletter/update?id=${id}`)}
+    <RedacteurAccessGuard>
+      <div className="w-full flex flex-col justify-between min-h-screen">
+        <HeaderWrapper />
+        <NavTabsNewsLetter />
+        <div className="container py-6 flex-1">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <SidebarPageHeading
+              title="Newsletters"
+              subtitle="Gere et soumets tes newsletters."
             />
+            <Button onClick={() => router.push('/newsletter/create')}>
+              Create Newsletter
+            </Button>
           </div>
-        )}
+
+          {loading ? (
+            <p className="paragraph-medium-normal text-black-300 mt-6">
+              Chargement...
+            </p>
+          ) : newsletters.length === 0 ? (
+            <div className="mt-8">
+              <EmptyState />
+            </div>
+          ) : (
+            <div className="mt-8">
+              <NewsletterDataTable
+                data={newsletters}
+                variant="redacteur"
+                redacteurId={user?.id || redacteurId}
+                onRefresh={loadNewsletters}
+                onEdit={(id) => router.push(`/newsletter/update?id=${id}`)}
+              />
+            </div>
+          )}
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </RedacteurAccessGuard>
   );
 };
 

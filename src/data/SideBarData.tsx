@@ -130,7 +130,7 @@ export const SideBarData = [
       AppRoles.SUPER_ADMIN,
       AppRoles.AUTHOR,
       AppRoles.ADMIN,
-      AppRoles.USER,
+     
     ],
     icon: Tag,
     subnav: [
@@ -140,7 +140,7 @@ export const SideBarData = [
           AppRoles.SUPER_ADMIN,
           AppRoles.AUTHOR,
           AppRoles.ADMIN,
-          AppRoles.USER,
+          
         ],
         url: `/u/tags`,
       },
@@ -158,7 +158,7 @@ export const SideBarData = [
       AppRoles.SUPER_ADMIN,
       AppRoles.AUTHOR,
       AppRoles.ADMIN,
-      AppRoles.USER,
+      
     ],
     icon: Folder,
     subnav: [
@@ -168,7 +168,7 @@ export const SideBarData = [
           AppRoles.SUPER_ADMIN,
           AppRoles.AUTHOR,
           AppRoles.ADMIN,
-          AppRoles.USER,
+          
         ],
         url: `/u/category`,
       },
@@ -199,6 +199,47 @@ export const SideBarData = [
     role: [AppRoles.SUPER_ADMIN],
     icon: Mail,
     subnav: [],
+  },
+  {
+
+
+
+    title: 'Redacteurs',
+
+
+    url: `/u/manage/newsletter/redacteurs`,
+
+
+    role: [AppRoles.SUPER_ADMIN, AppRoles.ADMIN],
+
+
+    icon: Mail,
+
+
+    subnav: [],
+
+
+  },
+
+
+  {
+
+
+    title: 'Newsletter Categories',
+
+
+    url: `/u/newsletter/categories/manage`,
+
+
+    role: [AppRoles.SUPER_ADMIN, AppRoles.ADMIN],
+
+
+    icon: Mail,
+
+
+    subnav: [],
+
+
   },
   {
     title: 'NewsLetter',

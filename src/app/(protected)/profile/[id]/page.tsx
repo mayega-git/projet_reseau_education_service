@@ -12,6 +12,8 @@ import {
   getAllFollowersOfUser,
   getAllUsersAUserIsFollowing,
 } from '@/lib/fetchers/user';
+import { cookies } from 'next/headers';
+import { decodeJwtPayload } from '@/lib/server/token-manager';
 import React from 'react';
 
 export default async function ProfilePage2({
@@ -20,9 +22,21 @@ export default async function ProfilePage2({
   params: Promise<{ id: string }>;
 }) {
   const id = (await params).id;
+  
+  // Server-side owner detection
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+  const decoded = token ? decodeJwtPayload(token) : null;
+  const currentUserId = (decoded?.sub as string) || (decoded?.id as string);
+  const isOwner = currentUserId === id;
+
   const userData = await fetchUserData(id);
-  const blogData = await getAllBlogsByAuthorId(id, 'PUBLISHED');
-  const podcastData = await getAllPodcastsByAuthorId(id, 'PUBLISHED');
+  
+  // Fetch according to owner status
+  const statusFilter = isOwner ? '' : 'PUBLISHED';
+  const blogData = await getAllBlogsByAuthorId(id, statusFilter);
+  const podcastData = await getAllPodcastsByAuthorId(id, statusFilter);
+  
   const totalPosts = blogData.length + podcastData.length;
   const followers = await getAllFollowersOfUser(id);
   const following = await getAllUsersAUserIsFollowing(id);

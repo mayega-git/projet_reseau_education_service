@@ -9,15 +9,15 @@ import {
 
 // Server Actions imports
 import {
-  fetchAllLikesForEntityId as fetchAllLikesForEntityIdAction,
-  fetchAllDislikesForEntityId as fetchAllDislikesForEntityIdAction,
-  fetchHasLikedStatusByUserId as fetchHasLikedStatusByUserIdAction,
-  fetchHasDislikedStatusByUserId as fetchHasDislikedStatusByUserIdAction,
-  fetchAllCommentsByEntityId as fetchAllCommentsByEntityIdAction,
+  fetchLikesCount as fetchAllLikesForEntityIdAction,
+  fetchDislikesCount as fetchAllDislikesForEntityIdAction,
+  hasLiked as fetchHasLikedStatusByUserIdAction,
+  hasDisliked as fetchHasDislikedStatusByUserIdAction,
+  fetchComments as fetchAllCommentsByEntityIdAction,
   createComment as createCommentAction,
   replyComment as replyCommentAction,
-  fetchAllCommentsRepliesForCommentId as fetchAllCommentsRepliesForCommentIdAction,
-  likeOrDislikeEntity as likeOrDislikeEntityAction,
+  fetchCommentReplies as fetchAllCommentsRepliesForCommentIdAction,
+  likeOrDislike as likeOrDislikeEntityAction,
 } from '@/actions/review';
 
 // Fetch total likes for an entity
