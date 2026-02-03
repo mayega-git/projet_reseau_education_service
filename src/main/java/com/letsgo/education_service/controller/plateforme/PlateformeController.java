@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/education/api/plateforme")
+@RequestMapping("/education-service/education/plateforme")
 @RequiredArgsConstructor
 public class PlateformeController {
 

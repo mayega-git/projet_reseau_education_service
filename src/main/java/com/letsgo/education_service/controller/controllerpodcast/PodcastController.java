@@ -32,8 +32,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@CrossOrigin(origins = "*")
-@RequestMapping("/education/api/podcasts")
+@CrossOrigin(originPatterns = "*")
+@RequestMapping("/education/podcasts")
 public class PodcastController {
 
     private final PodcastService podcastService;
@@ -45,27 +45,39 @@ public class PodcastController {
         this.objectMapper = objectMapper;
     }
 
-/* 
-
-    @GetMapping
-    @Operation(summary = "Obtenir tous les blogs avec des paramètres optionnels")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Succès"),
-            @ApiResponse(responseCode = "404", description = "Id non trouvé")
-    })
-    public Flux<?> getAllPodcasts(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String authorId,
-            @RequestParam(required = false) ContentStatus status,
-            @RequestParam(required = false) Domain domain,
-            @RequestParam(required = false) String categoryId,
-            @RequestParam(required = false) List<String> tags,
-            @RequestParam(required = false) String organisationId) {
-
-            return podcastService.getPodcastByFilters(authorId, status, domain, categoryId, tags, organisationId, title);
-    }
-
-*/      
+    /*
+     * 
+     * @GetMapping
+     * 
+     * @Operation(summary = "Obtenir tous les blogs avec des paramètres optionnels")
+     * 
+     * @ApiResponses(value = {
+     * 
+     * @ApiResponse(responseCode = "200", description = "Succès"),
+     * 
+     * @ApiResponse(responseCode = "404", description = "Id non trouvé")
+     * })
+     * public Flux<?> getAllPodcasts(
+     * 
+     * @RequestParam(required = false) String title,
+     * 
+     * @RequestParam(required = false) String authorId,
+     * 
+     * @RequestParam(required = false) ContentStatus status,
+     * 
+     * @RequestParam(required = false) Domain domain,
+     * 
+     * @RequestParam(required = false) String categoryId,
+     * 
+     * @RequestParam(required = false) List<String> tags,
+     * 
+     * @RequestParam(required = false) String organisationId) {
+     * 
+     * return podcastService.getPodcastByFilters(authorId, status, domain,
+     * categoryId, tags, organisationId, title);
+     * }
+     * 
+     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Créer un podcast avec un fichier audio et une image de couverture optionnelle")
     @ApiResponses({
@@ -74,47 +86,46 @@ public class PodcastController {
             @ApiResponse(responseCode = "415", description = "Type de contenu non supporté")
     })
     public Mono<ResponseEntity<Podcast_entity>> createPodcast(
-    @RequestPart("data") String createDTOJson,
-    @RequestPart(value = "audio", required = false) Mono<FilePart> audioFile,
-    @RequestPart(value = "cover", required = false) Mono<FilePart> coverFile
-) {
-    System.out.println("=== CRÉATION PODCAST ===");
-    System.out.println("JSON reçu : " + createDTOJson);
-    System.out.println("Audio présent : " + audioFile.hasElement());
-    System.out.println("Cover présent : " + coverFile.hasElement());
+            @RequestPart("data") String createDTOJson,
+            @RequestPart(value = "audio", required = false) Mono<FilePart> audioFile,
+            @RequestPart(value = "cover", required = false) Mono<FilePart> coverFile) {
+        System.out.println("=== CRÉATION PODCAST ===");
+        System.out.println("JSON reçu : " + createDTOJson);
+        System.out.println("Audio présent : " + audioFile.hasElement());
+        System.out.println("Cover présent : " + coverFile.hasElement());
 
-            return Mono.fromCallable(() -> {
-                try {
-                    PodcastCreateDTO createDTO = objectMapper.readValue(createDTOJson, PodcastCreateDTO.class);
-                    System.out.println("DTO parsé : " + createDTO.getTitle());
-                    return createDTO;
-                } catch (JsonProcessingException e) {
-                    System.err.println("Erreur parsing JSON : " + e.getMessage());
-                    throw new IllegalArgumentException("JSON invalide : " + e.getMessage());
-                }
-            })
-            .flatMap(dto -> {
-                System.out.println("Appel du service PodcastService...");
-                return podcastService.createPodcast(dto, audioFile, coverFile);
-            })
-            .map(podcast -> {
-                System.out.println("Podcast créé : " + podcast.getId());
-                return ResponseEntity.status(HttpStatus.CREATED).body(podcast);
-            })
-            .onErrorResume(IllegalArgumentException.class, e -> {
-                System.err.println("Erreur validation : " + e.getMessage());
-                Podcast_entity error = createErrorPodcast("Erreur de validation", e.getMessage());
-                return Mono.just(ResponseEntity.badRequest().body(error));
-            })
-            .onErrorResume(Exception.class, e -> {
-                System.err.println("Erreur serveur : " + e.getMessage());
-                e.printStackTrace();
-                Podcast_entity error = createErrorPodcast("Erreur serveur", "Une erreur interne s'est produite");
-                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error));
-            });
-          }
+        return Mono.fromCallable(() -> {
+            try {
+                PodcastCreateDTO createDTO = objectMapper.readValue(createDTOJson, PodcastCreateDTO.class);
+                System.out.println("DTO parsé : " + createDTO.getTitle());
+                return createDTO;
+            } catch (JsonProcessingException e) {
+                System.err.println("Erreur parsing JSON : " + e.getMessage());
+                throw new IllegalArgumentException("JSON invalide : " + e.getMessage());
+            }
+        })
+                .flatMap(dto -> {
+                    System.out.println("Appel du service PodcastService...");
+                    return podcastService.createPodcast(dto, audioFile, coverFile);
+                })
+                .map(podcast -> {
+                    System.out.println("Podcast créé : " + podcast.getId());
+                    return ResponseEntity.status(HttpStatus.CREATED).body(podcast);
+                })
+                .onErrorResume(IllegalArgumentException.class, e -> {
+                    System.err.println("Erreur validation : " + e.getMessage());
+                    Podcast_entity error = createErrorPodcast("Erreur de validation", e.getMessage());
+                    return Mono.just(ResponseEntity.badRequest().body(error));
+                })
+                .onErrorResume(Exception.class, e -> {
+                    System.err.println("Erreur serveur : " + e.getMessage());
+                    e.printStackTrace();
+                    Podcast_entity error = createErrorPodcast("Erreur serveur", "Une erreur interne s'est produite");
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error));
+                });
+    }
 
-    //  Méthode utilitaire cohérente formatage de l'erreur 
+    // Méthode utilitaire cohérente formatage de l'erreur
     private Podcast_entity createErrorPodcast(String title, String description) {
         Podcast_entity errorPodcast = new Podcast_entity();
         errorPodcast.setTitle(title);
@@ -129,9 +140,9 @@ public class PodcastController {
             @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
     })
     public Flux<Podcast_entity> getAllPodcast() {
-            return podcastService.getAllPodcast();
+        return podcastService.getAllPodcast();
     }
-  
+
     @GetMapping("/{id}")
     @Operation(summary = "Récupérer un podcast par son ID")
     @ApiResponses({
@@ -139,11 +150,10 @@ public class PodcastController {
             @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
     })
     public Mono<ResponseEntity<Podcast_entity>> getPodcastById(@PathVariable String id) {
-            return podcastService.getPodcastById(id)
-            .map(ResponseEntity::ok)
-            .defaultIfEmpty(ResponseEntity.notFound().build());
+        return podcastService.getPodcastById(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
-            
 
     @PatchMapping("/{id}/publish")
     @Operation(summary = "Publier un podcast")
@@ -153,15 +163,11 @@ public class PodcastController {
     })
     public Mono<ResponseEntity<Podcast_entity>> publishBlog(@PathVariable String id) {
         return podcastService.publishPodcast(id)
-            .map(ResponseEntity::ok)
-            .defaultIfEmpty(ResponseEntity.notFound().build());
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-   
-    
-    
-    @PutMapping(value = "/{id}",consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Mettre à jour un podcast")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Podcast mis à jour"),
@@ -170,12 +176,12 @@ public class PodcastController {
     public Mono<ResponseEntity<Podcast_entity>> updatePodcast(
             @PathVariable String id,
             @Valid @RequestBody PodcastCreateDTO updateDTO) {
-                System.out.println("UPDATE PODCAST CONTROLLER HIT");
-         return podcastService.updatePodcast(id, updateDTO)
-            .map(updatedBlog -> ResponseEntity.ok(updatedBlog))
-            .onErrorResume(NoSuchElementException.class, e -> Mono.just(ResponseEntity.notFound().build()))
-            .onErrorResume(IllegalStateException.class, e -> 
-                Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
+        System.out.println("UPDATE PODCAST CONTROLLER HIT");
+        return podcastService.updatePodcast(id, updateDTO)
+                .map(updatedBlog -> ResponseEntity.ok(updatedBlog))
+                .onErrorResume(NoSuchElementException.class, e -> Mono.just(ResponseEntity.notFound().build()))
+                .onErrorResume(IllegalStateException.class,
+                        e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
     }
 
     @GetMapping("/{idPodcast}/coverpodcast")
@@ -183,11 +189,10 @@ public class PodcastController {
         System.out.println("=====PODCAST SERVICE - GET COVER IMAGE ========");
 
         return podcastService.getCoverImage(idPodcast)
-            .map(file -> ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getHeaders().getContentType().toString()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-                .body(file.getBody())
-            );
+                .map(file -> ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(file.getHeaders().getContentType().toString()))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                        .body(file.getBody()));
     }
 
     @GetMapping("/{idPodcast}/audiopodcast")
@@ -195,127 +200,175 @@ public class PodcastController {
         System.out.println("=====PODCAST SERVICE - GET AUDIO IMAGE =======");
 
         return podcastService.getAudioPodcast(idPodcast)
-            .map(file -> ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getHeaders().getContentType().toString()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-                .body(file.getBody())
-            );
+                .map(file -> ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(file.getHeaders().getContentType().toString()))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                        .body(file.getBody()));
     }
-                
+
     /*
- 
-    @PutMapping("/{id}/cover")
-    @Operation(summary = "Ajouter ou modifier une image de couverture pour un podcast")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Image ajoutée avec succès"),
-            @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
-    })
-    public Mono<ResponseEntity<Podcast_entity>> uploadCoverImg(
-        @PathVariable String id,
-        @RequestPart("cover") FilePart coverImage) {
+     * 
+     * @PutMapping("/{id}/cover")
+     * 
+     * @Operation(summary =
+     * "Ajouter ou modifier une image de couverture pour un podcast")
+     * 
+     * @ApiResponses({
+     * 
+     * @ApiResponse(responseCode = "200", description =
+     * "Image ajoutée avec succès"),
+     * 
+     * @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
+     * })
+     * public Mono<ResponseEntity<Podcast_entity>> uploadCoverImg(
+     * 
+     * @PathVariable String id,
+     * 
+     * @RequestPart("cover") FilePart coverImage) {
+     * 
+     * return podcastService.uploadCoverImage(id, coverImage)
+     * .map(updatedBlog -> ResponseEntity.ok(updatedBlog))
+     * .onErrorResume(e -> {
+     * if (e instanceof BlogNotFoundException) {
+     * return Mono.just(ResponseEntity.notFound().build());
+     * } else if (e instanceof IllegalArgumentException) {
+     * return Mono.just(ResponseEntity.badRequest().build());
+     * } else {
+     * return
+     * Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+     * }
+     * });
+     * }
+     * 
+     * @PatchMapping("/{id}/delete")
+     * 
+     * @Operation(summary =
+     * "Supprimer un podcast par son Id (l'action de suppression est traitée comme une archive)"
+     * )
+     * 
+     * @ApiResponses(value = {
+     * 
+     * @ApiResponse(responseCode = "200", description =
+     * "Podcast supprimé avec succès"),
+     * 
+     * @ApiResponse(responseCode = "404", description = "Podcast non trouvé"),
+     * 
+     * @ApiResponse(responseCode = "400", description =
+     * "Le podcast est déjà supprimé")
+     * })
+     * public Mono<ResponseEntity<Void>> archivePodcast(@PathVariable String id) {
+     * return podcastService.deleteBlog(id)
+     * .map(isArchived -> isArchived
+     * ? ResponseEntity.ok().<Void>build()
+     * : ResponseEntity.status(HttpStatus.BAD_REQUEST).<Void>build())
+     * .defaultIfEmpty(ResponseEntity.notFound().build());
+     * }
+     * 
+     * @GetMapping("/{id}/stream")
+     * 
+     * @Operation(summary = "Écouter un podcast en streaming")
+     * 
+     * @ApiResponses({
+     * 
+     * @ApiResponse(responseCode = "200", description = "Lecture en cours"),
+     * 
+     * @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
+     * })
+     * public Mono<ResponseEntity<Flux<DataBuffer>>> streamPodcast(@PathVariable
+     * String podcastId) {
+     * return podcastService.streamPodcast(podcastId)
+     * .map(dataBufferFlux -> ResponseEntity.ok()
+     * .contentType(MediaType.APPLICATION_OCTET_STREAM)
+     * .body(dataBufferFlux)
+     * )
+     * .defaultIfEmpty(ResponseEntity.notFound().build());
+     * }
+     * 
+     * 
+     * @PutMapping("/{id}/uploadPodcast")
+     * 
+     * @Operation(summary = "Modifier  l'audio pour un podcast existant")
+     * 
+     * @ApiResponses({
+     * 
+     * @ApiResponse(responseCode = "200", description =
+     * "Podcast mis à jour avec succès"),
+     * 
+     * @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
+     * })
+     * public Mono<ResponseEntity<Podcast_entity>> uploadPodcast(
+     * 
+     * @PathVariable String id,
+     * 
+     * @RequestPart("audio") FilePart audioFile) {
+     * 
+     * return podcastService.uploadPodcast(id, audioFile)
+     * .map(updatedBlog -> ResponseEntity.ok(updatedBlog))
+     * .onErrorResume(e -> {
+     * if (e instanceof BlogNotFoundException) {
+     * return Mono.just(ResponseEntity.notFound().build());
+     * } else if (e instanceof IllegalArgumentException) {
+     * return Mono.just(ResponseEntity.badRequest().build());
+     * } else {
+     * return
+     * Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+     * }
+     * });
+     * }
+     */
 
-            return podcastService.uploadCoverImage(id, coverImage)
-                .map(updatedBlog -> ResponseEntity.ok(updatedBlog))
-                .onErrorResume(e -> {
-                    if (e instanceof BlogNotFoundException) {
-                        return Mono.just(ResponseEntity.notFound().build());
-                    } else if (e instanceof IllegalArgumentException) {
-                        return Mono.just(ResponseEntity.badRequest().build());
-                    } else {
-                        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-                    }
-                });
-    }
- 
-    @PatchMapping("/{id}/delete")
-    @Operation(summary = "Supprimer un podcast par son Id (l'action de suppression est traitée comme une archive)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Podcast supprimé avec succès"),
-            @ApiResponse(responseCode = "404", description = "Podcast non trouvé"),
-            @ApiResponse(responseCode = "400", description = "Le podcast est déjà supprimé")
-    })
-    public Mono<ResponseEntity<Void>> archivePodcast(@PathVariable String id) {
-        return podcastService.deleteBlog(id)
-            .map(isArchived -> isArchived
-                ? ResponseEntity.ok().<Void>build()
-                : ResponseEntity.status(HttpStatus.BAD_REQUEST).<Void>build())
-            .defaultIfEmpty(ResponseEntity.notFound().build());
-    }
- 
-    @GetMapping("/{id}/stream")
-    @Operation(summary = "Écouter un podcast en streaming")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lecture en cours"),
-            @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
-    })
-    public Mono<ResponseEntity<Flux<DataBuffer>>> streamPodcast(@PathVariable String podcastId) {
-        return podcastService.streamPodcast(podcastId)
-            .map(dataBufferFlux -> ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(dataBufferFlux)
-            )
-            .defaultIfEmpty(ResponseEntity.notFound().build());
-    }
+    /*
+     * @PatchMapping("/{id}/uploadCover")
+     * 
+     * @Operation(summary =
+     * "Uploader une image de couverture pour un podcast existant")
+     * 
+     * @ApiResponses({
+     * 
+     * @ApiResponse(responseCode = "200", description =
+     * "Image de couverture mise à jour avec succès"),
+     * 
+     * @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
+     * })
+     * public Mono<ResponseEntity<Podcast_entity>> uploadCoverImg(
+     * 
+     * @PathVariable String id,
+     * 
+     * @RequestPart("cover") FilePart coverImage) {
+     * 
+     * return podcastService.uploadCoverImage(id, coverImage)
+     * .map(updatedBlog -> ResponseEntity.ok(updatedBlog))
+     * .onErrorResume(e -> {
+     * if (e instanceof BlogNotFoundException) {
+     * return Mono.just(ResponseEntity.notFound().build());
+     * } else if (e instanceof IllegalArgumentException) {
+     * return Mono.just(ResponseEntity.badRequest().build());
+     * } else {
+     * return
+     * Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+     * }
+     * });
+     * }
+     */
 
-
-    @PutMapping("/{id}/uploadPodcast")
-    @Operation(summary = "Modifier  l'audio pour un podcast existant")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Podcast mis à jour avec succès"),
-            @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
-    })
-    public Mono<ResponseEntity<Podcast_entity>> uploadPodcast(
-        @PathVariable String id,
-        @RequestPart("audio") FilePart audioFile) {
-
-        return podcastService.uploadPodcast(id, audioFile)
-            .map(updatedBlog -> ResponseEntity.ok(updatedBlog))
-            .onErrorResume(e -> {
-                if (e instanceof BlogNotFoundException) {
-                    return Mono.just(ResponseEntity.notFound().build());
-                } else if (e instanceof IllegalArgumentException) {
-                    return Mono.just(ResponseEntity.badRequest().build());
-                } else {
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-                }
-            });
-    }*/
- 
-   /*  @PatchMapping("/{id}/uploadCover")
-    @Operation(summary = "Uploader une image de couverture pour un podcast existant")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Image de couverture mise à jour avec succès"),
-            @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
-    })
-     public Mono<ResponseEntity<Podcast_entity>> uploadCoverImg(
-        @PathVariable String id,
-        @RequestPart("cover") FilePart coverImage) {
-
-            return podcastService.uploadCoverImage(id, coverImage)
-                .map(updatedBlog -> ResponseEntity.ok(updatedBlog))
-                .onErrorResume(e -> {
-                    if (e instanceof BlogNotFoundException) {
-                        return Mono.just(ResponseEntity.notFound().build());
-                    } else if (e instanceof IllegalArgumentException) {
-                        return Mono.just(ResponseEntity.badRequest().build());
-                    } else {
-                        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-                    }
-                });
-    }*/
- 
-/* 
-    @GetMapping("/{id}/stream-coverImage")
-    @Operation(summary = "Écouter un podcast en streaming")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lecture en cours"),
-            @ApiResponse(responseCode = "404", description = "Podcast non trouvé"),
-            @ApiResponse(responseCode = "500", description= "Erreur interne du serveur")
-    })
-    public ResponseEntity<Flux<DataBuffer>> streamCoverImage(@PathVariable String id) {
-        Flux<DataBuffer> flux = podcastService.streamCoverImage(id);
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(flux);
-    }
-
-*/
+    /*
+     * @GetMapping("/{id}/stream-coverImage")
+     * 
+     * @Operation(summary = "Écouter un podcast en streaming")
+     * 
+     * @ApiResponses({
+     * 
+     * @ApiResponse(responseCode = "200", description = "Lecture en cours"),
+     * 
+     * @ApiResponse(responseCode = "404", description = "Podcast non trouvé"),
+     * 
+     * @ApiResponse(responseCode = "500", description= "Erreur interne du serveur")
+     * })
+     * public ResponseEntity<Flux<DataBuffer>> streamCoverImage(@PathVariable String
+     * id) {
+     * Flux<DataBuffer> flux = podcastService.streamCoverImage(id);
+     * return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(flux);
+     * }
+     * 
+     */
 }

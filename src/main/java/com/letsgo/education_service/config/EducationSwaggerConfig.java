@@ -5,9 +5,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class SwaggerConfig {
+public class EducationSwaggerConfig {
     @Bean
-    public OpenAPI customOpenAPI() {
+    @org.springframework.context.annotation.Primary
+    public OpenAPI educationOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Education Service")

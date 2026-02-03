@@ -9,13 +9,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 
+//les classes de demarrage des modules ne doivent plus etre des points d'entrée
 
-@SpringBootApplication
-@ComponentScan(basePackages = {
-		"com.letsgo.education_service", 
-})
-@EnableR2dbcRepositories(basePackages = "com.letsgo.education_service.repository")  
-@EnableScheduling
 public class EducationServiceApplication {
 	public static void main(String[] args) {
 
