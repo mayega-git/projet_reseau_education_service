@@ -50,7 +50,7 @@ export default function GroupsList({ initialGroups, onGroupClick, onGroupsUpdate
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-6 py-3 bg-primary-purple-600 text-black-500 rounded-lg hover:bg-primary-purple-700 transition-all font-semibold shadow-sm hover:shadow-md"
+          className="flex items-center gap-2 px-6 py-3 bg-secondaryOrange-500 text-white rounded-lg hover:bg-secondaryOrange-600 transition-all font-semibold shadow-sm hover:shadow-md"
         >
           <Plus className="w-5 h-5" />
           Créer un forum
@@ -85,7 +85,7 @@ export default function GroupsList({ initialGroups, onGroupClick, onGroupsUpdate
           </div>
 
           <div className="flex gap-4">
-            <button type="submit" className="px-8 py-2.5 bg-primary-purple-600 text-black-300 rounded-lg hover:bg-primary-purple-700 font-semibold shadow-sm transition-all">
+            <button type="submit" className="px-8 py-2.5 bg-secondaryOrange-500 text-white rounded-lg hover:bg-secondaryOrange-600 font-semibold shadow-sm transition-all">
               Soumettre
             </button>
             <button

@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import CommentTree from './CommentTree';
 import LoadingSpinner from './LoadingSpinner';
 import type { Post, Comment } from '@/types/forum';
-import { api } from '@/lib/FetchFromForum';
+import { api, buildCommentTree } from '@/lib/FetchFromForum';
 
 interface PostDetailProps {
   post: Post;
@@ -51,7 +51,9 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     setLoading(true);
     try {
       const data = await api.getCommentsByPost(post.postId);
-      setComments(data);
+      // Construct the nested tree manually as the backend returns a flat list
+      const nestedComments = buildCommentTree(data);
+      setComments(nestedComments);
     } catch (err) {
       setError('Erreur lors du chargement des commentaires');
     } finally {
@@ -66,7 +68,9 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     setError(null);
     try {
       const updatedPost = await api.likePost(post.postId, user.id);
-      setPost(updatedPost);
+      // Preserve existing comment count if the backend returns 0/null in the update response
+      const commentCount = updatedPost.commentCount || post.commentCount;
+      setPost({ ...updatedPost, commentCount });
     } catch (err) {
       console.error('Like error:', err);
       setError('Erreur lors du like');
@@ -83,7 +87,9 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     setError(null);
     try {
       const updatedPost = await api.dislikePost(post.postId, user.id);
-      setPost(updatedPost);
+      // Preserve existing comment count if the backend returns 0/null in the update response
+      const commentCount = updatedPost.commentCount || post.commentCount;
+      setPost({ ...updatedPost, commentCount });
     } catch (err) {
       console.error('Dislike error:', err);
       setError('Erreur lors du dislike');
@@ -157,7 +163,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
   if (!post) {
     return (
       <div className="bg-white p-8 rounded-2xl border border-grey-200">
-        <button onClick={onBack} className="flex items-center gap-2 text-primary-purple-600 font-medium mb-6">
+        <button onClick={onBack} className="flex items-center gap-2 text-secondaryOrange-600 font-medium mb-6">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M19 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -190,7 +196,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
       {/* Post Content */}
       <div className="bg-grey-50 rounded-2xl border border-grey-200 p-8 mb-10 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 p-6">
-          <span className="bg-primary-purple-100 text-primary-purple-700 px-3 py-1 rounded text-[11px] font-bold uppercase tracking-wider">Forum Post</span>
+          <span className="bg-secondaryOrange-100 text-secondaryOrange-700 px-3 py-1 rounded text-[11px] font-bold uppercase tracking-wider">Discussion Forum</span>
         </div>
 
         <h2 className="h2-bold text-black-500 mb-6 pr-24">{post.title}</h2>
@@ -200,11 +206,21 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-6 border-t border-grey-200">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary-purple-600 flex items-center justify-center text-white text-lg font-bold shadow-sm">
-              {post.authorName?.charAt(0).toUpperCase() || 'U'}
+            <div className="w-12 h-12 rounded-full bg-secondaryOrange-500 flex items-center justify-center text-white text-lg font-bold shadow-sm">
+              {post.authorName && post.authorName !== 'Utilisateur'
+                ? post.authorName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().substring(0, 1)
+                : (post.authorId === user?.id && user?.firstName)
+                  ? user.firstName.charAt(0).toUpperCase()
+                  : 'U'}
             </div>
             <div>
-              <p className="paragraph-medium-bold text-black-500">Par {post.authorName || 'Utilisateur'}</p>
+              <p className="paragraph-medium-bold text-black-500">
+                Par {(post.authorName && post.authorName !== 'Utilisateur')
+                  ? post.authorName
+                  : (post.authorId === user?.id && user?.firstName)
+                    ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`
+                    : post.authorName || 'Utilisateur'}
+              </p>
               <p className="paragraph-xsmall-normal text-black-300">{post.createdAt ? new Date(post.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date inconnue'}</p>
             </div>
           </div>
@@ -242,8 +258,8 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
         {/* New Comment Form */}
         <form onSubmit={handleCreateComment} className="mb-10 group">
           <div className="flex items-start gap-4 mb-4">
-            <div className="w-10 h-10 rounded-full bg-primary-purple-500 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-sm">
-              {user?.firstName?.charAt(0).toUpperCase() || 'V'}
+            <div className="w-10 h-10 rounded-full bg-secondaryOrange-400 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-sm">
+              {user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'V'}
             </div>
             <textarea
               name="content"
@@ -256,7 +272,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
           <div className="flex justify-end">
             <button
               type="submit"
-              className="px-8 py-2.5 bg-primary-purple-600 text-black-300 rounded-lg hover:bg-primary-purple-700 transition-all font-semibold shadow-sm hover:translate-y-[-1px]"
+              className="px-8 py-2.5 bg-secondaryOrange-500 text-white rounded-lg hover:bg-secondaryOrange-600 transition-all font-semibold shadow-sm hover:translate-y-[-1px]"
             >
               Commenter
             </button>
@@ -265,8 +281,8 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
 
         {/* Edit Comment Form */}
         {editingComment && (
-          <form onSubmit={handleUpdateComment} className="mb-10 bg-primary-purple-50 border border-primary-purple-200 p-6 rounded-xl">
-            <h4 className="paragraph-medium-bold text-primary-purple-800 mb-4 flex items-center gap-2">
+          <form onSubmit={handleUpdateComment} className="mb-10 bg-secondaryOrange-50 border border-secondaryOrange-200 p-6 rounded-xl">
+            <h4 className="paragraph-medium-bold text-secondaryOrange-800 mb-4 flex items-center gap-2">
               <Edit2 className="w-4 h-4" /> Modifier votre commentaire
             </h4>
             <textarea
@@ -286,7 +302,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-primary-purple-600 text-black-500 rounded-lg hover:bg-primary-purple-700 transition-colors font-semibold shadow-sm"
+                className="px-5 py-2 bg-secondaryOrange-500 text-white rounded-lg hover:bg-secondaryOrange-600 transition-colors font-semibold shadow-sm"
               >
                 Enregistrer
               </button>

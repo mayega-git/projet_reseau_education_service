@@ -40,6 +40,7 @@ export interface Comment {
   commentaireId: string;
   postId: string;
   parentId?: string;
+  parentCommentId?: string;
   content: string;
   authorId: string;
   authorName: string;

@@ -18,7 +18,7 @@ function CommentItem({
   onReply,
   onEdit,
   onDelete,
-  level
+  level = 0
 }: {
   comment: Comment;
   onReply: (parentId: string, content: string) => Promise<void>;
@@ -31,10 +31,9 @@ function CommentItem({
   const [replyContent, setReplyContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { user } = useAuth();
   const commentDate = comment.createdAt || comment.creationDate;
   const hasReplies = comment.replies && comment.replies.length > 0;
-
-  const { user } = useAuth();
 
   const handleReplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +44,7 @@ function CommentItem({
       await onReply(comment.commentaireId, replyContent);
       setReplyContent('');
       setShowReplyForm(false);
-      setShowReplies(true); // Auto-show replies after posting
+      setShowReplies(true);
     } catch (error) {
       console.error('Error submitting reply:', error);
     } finally {
@@ -53,151 +52,142 @@ function CommentItem({
     }
   };
 
-  return (
-    <div className="group">
-      {/* Comment Card */}
-      <div
-        onClick={() => hasReplies && setShowReplies(!showReplies)}
-        className={`bg-white rounded-xl border border-grey-200 p-5 hover:border-primary-purple-200 transition-all ${hasReplies ? 'cursor-pointer' : ''} shadow-sm`}
-      >
-        {/* Header */}
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-primary-purple-100 flex items-center justify-center text-primary-purple-700 font-bold text-sm shadow-inner overflow-hidden">
-              {comment.authorName?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'U'}
-            </div>
-            <div>
-              <p className="paragraph-medium-bold text-black-500">{comment.authorName || 'Utilisateur'}</p>
-              <p className="text-[12px] text-black-200 mt-0.5 font-inter">
-                {commentDate ? new Date(commentDate).toLocaleDateString('fr-FR', {
-                  day: 'numeric',
-                  month: 'short',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                }) : 'Date inconnue'}
-              </p>
-            </div>
-          </div>
+  // Extremely robust name logic: normalized from backend, or fallback to current user if IDs match
+  const authorDisplayName = (comment.authorName && comment.authorName !== 'Utilisateur')
+    ? comment.authorName
+    : (comment.authorId === user?.id && user?.firstName)
+      ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`
+      : comment.authorName || 'Utilisateur';
 
-          {comment.authorId === user?.id && (
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(comment);
-                }}
-                className="p-2 text-primary-purple-600 hover:bg-primary-purple-50 rounded-lg transition-colors"
-                title="Modifier"
-              >
-                <Edit2 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(comment.commentaireId);
-                }}
-                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                title="Supprimer"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+  const authorInitials = authorDisplayName
+    ? authorDisplayName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().substring(0, 2)
+    : 'U';
+
+  return (
+    <div className="relative">
+      {/* Connecting line for nested replies */}
+      {level > 0 && (
+        <div className="absolute -left-6 top-5 w-6 h-[2px] bg-grey-200" />
+      )}
+
+      <div className="flex gap-3 mb-4 group">
+        {/* Avatar */}
+        <div className="flex-shrink-0 mt-1">
+          <div className="w-9 h-9 rounded-full bg-secondaryOrange-100 flex items-center justify-center text-secondaryOrange-700 font-bold text-xs shadow-sm border border-secondaryOrange-200">
+            {authorInitials}
+          </div>
         </div>
 
-        {/* Content */}
-        <p className="paragraph-medium-normal text-black-500 mb-4 leading-relaxed pl-1">{comment.content}</p>
-
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-2 border-t text-black-500 border-grey-500">
-          <div className="flex items-center gap-6">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowReplyForm(!showReplyForm);
-              }}
-              className="flex items-center gap-2 text-sm text-black-800 hover:text-primary-purple-600 font-semibold transition-colors group/reply"
+        {/* Comment Content + Actions */}
+        <div className="flex-1 max-w-[90%]">
+          {/* Bubble wrapper */}
+          <div className="relative inline-block group/bubble max-w-full">
+            {/* Main Bubble */}
+            <div
+              onClick={() => hasReplies && setShowReplies(!showReplies)}
+              className={`bg-grey-100 rounded-2xl px-4 py-2.5 shadow-sm border border-transparent hover:border-grey-200 transition-colors ${hasReplies ? 'cursor-pointer' : ''}`}
             >
-              <Reply className="w-4 h-4 group-hover/reply:rotate-12 transition-transform text-black-500" />
-              Répondre
-            </button>
+              <p className="paragraph-small-bold text-black-500 mb-0.5">{authorDisplayName}</p>
+              <p className="paragraph-medium-normal text-black-400 break-words leading-tight">{comment.content}</p>
+            </div>
 
-            {hasReplies && (
-              <div className="flex items-center gap-2 text-sm text-primary-purple-600 font-bold select-none cursor-pointer">
-                {showReplies ? (
-                  <>
-                    <ChevronDown className="w-4 h-4" />
-                    Masquer ({comment.replies!.length})
-                  </>
-                ) : (
-                  <>
-                    <ChevronRight className="w-4 h-4" />
-                    Voir les réponses ({comment.replies!.length})
-                  </>
-                )}
+            {/* Float Menu for author */}
+            {comment.authorId === user?.id && (
+              <div className="absolute -right-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover/bubble:opacity-100 transition-opacity">
+                <button
+                  onClick={() => onEdit(comment)}
+                  className="p-1.5 text-black-200 hover:text-secondaryOrange-600 hover:bg-white rounded-full transition-all shadow-sm"
+                  title="Modifier"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => onDelete(comment.commentaireId)}
+                  className="p-1.5 text-black-200 hover:text-red-500 hover:bg-white rounded-full transition-all shadow-sm"
+                  title="Supprimer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
             )}
           </div>
-          <div className="text-[11px] font-bold text-grey-400 uppercase tracking-tighter italic">Message #{comment.commentaireId?.substring(0, 4)}</div>
+
+          {/* Action links */}
+          <div className="flex items-center gap-4 mt-1 ml-2 text-[12px] font-semibold text-black-300">
+            <button
+              onClick={() => setShowReplyForm(!showReplyForm)}
+              className="hover:text-secondaryOrange-600 transition-colors"
+            >
+              Répondre
+            </button>
+            <span className="text-[11px] font-normal text-black-200">
+              {commentDate ? new Date(commentDate).toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+              }) : 'Date inconnue'}
+            </span>
+          </div>
+
+          {/* Inline Reply Form */}
+          {showReplyForm && (
+            <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+              <form onSubmit={handleReplySubmit} className="flex gap-2">
+                <textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder={`Répondre à ${comment.authorName}...`}
+                  required
+                  rows={1}
+                  autoFocus
+                  className="custom-input h-auto py-2 min-h-[40px] flex-1 bg-white rounded-xl text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleReplySubmit(e);
+                    }
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !replyContent.trim()}
+                  className="px-4 py-2 bg-secondaryOrange-500 text-white rounded-xl hover:bg-secondaryOrange-600 disabled:opacity-50 text-xs font-bold transition-colors shadow-sm"
+                >
+                  {isSubmitting ? '...' : 'Envoyer'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* Expand/Collapse Replies */}
+          {hasReplies && (
+            <button
+              onClick={() => setShowReplies(!showReplies)}
+              className="flex items-center gap-1.5 mt-2 ml-2 text-secondaryOrange-600 hover:text-secondaryOrange-700 font-bold text-xs"
+            >
+              {showReplies ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+              {showReplies ? 'Masquer les réponses' : `Afficher les réponses (${comment.replies!.length})`}
+            </button>
+          )}
+
+          {/* Nested Replies Rendering */}
+          {hasReplies && showReplies && (
+            <div className="mt-4 border-l-2 border-grey-100 ml-2 pl-6 space-y-4">
+              {comment.replies!.map((reply) => (
+                <CommentItem
+                  key={reply.commentaireId}
+                  comment={reply}
+                  onReply={onReply}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  level={level + 1}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Inline Reply Form */}
-      {showReplyForm && (
-        <div className="mt-4 ml-6 sm:ml-12 animate-in slide-in-from-top-4 duration-300">
-          <form onSubmit={handleReplySubmit} className="bg-grey-50 border border-grey-200 rounded-xl p-6 shadow-inner">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-9 h-9 rounded-full bg-primary-purple-600 flex items-center justify-center text-black-500 font-bold text-xs flex-shrink-0 shadow-sm">
-                {user?.firstName?.charAt(0).toUpperCase() || 'V'}
-              </div>
-              <textarea
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                placeholder={`Répondre à ${comment.authorName}...`}
-                required
-                rows={3}
-                autoFocus
-                className="custom-input h-auto py-2.5 min-h-[80px] flex-1 bg-white font-inter"
-              />
-            </div>
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowReplyForm(false);
-                  setReplyContent('');
-                }}
-                className="px-5 py-2 text-sm bg-white text-black-500 rounded-lg hover:bg-grey-50 transition-colors border border-grey-300 font-bold"
-              >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting || !replyContent.trim()}
-                className="px-6 py-2 text-sm bg-primary-black-600 text-black-800 rounded-lg hover:bg-primary-black-700 transition-colors disabled:opacity-50 font-bold shadow-sm"
-              >
-                {isSubmitting ? 'Envoi...' : 'Répondre'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Nested Replies */}
-      {hasReplies && showReplies && (
-        <div className="mt-4 ml-6 sm:ml-12 space-y-4 border-l-2 border-primary-purple-100 pl-4 sm:pl-6 animate-in slide-in-from-top-4 duration-300">
-          {comment.replies!.map((reply) => (
-            <CommentItem
-              key={reply.commentaireId}
-              comment={reply}
-              onReply={onReply}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              level={level + 1}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -210,7 +200,7 @@ export default function CommentTree({
   level = 0
 }: CommentTreeProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 pt-4">
       {comments.map((comment) => (
         <CommentItem
           key={comment.commentaireId}

@@ -73,6 +73,42 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
     onPostClick(post);
     // Recharger les posts quand l'utilisateur revient
   };
+  const handleLike = async (postId: string) => {
+    if (!user?.id) return;
+    try {
+      const updatedPost = await api.likePost(postId, user.id);
+      setPosts(prev => prev.map(p => {
+        if (p.postId === postId) {
+          // Preserve commentCount if updatedPost has it as 0
+          const commentCount = updatedPost.commentCount || p.commentCount;
+          return { ...updatedPost, commentCount };
+        }
+        return p;
+      }));
+    } catch (err) {
+      console.error('Like error:', err);
+      setError('Erreur lors du like');
+    }
+  };
+
+  const handleDislike = async (postId: string) => {
+    if (!user?.id) return;
+    try {
+      const updatedPost = await api.dislikePost(postId, user.id);
+      setPosts(prev => prev.map(p => {
+        if (p.postId === postId) {
+          // Preserve commentCount if updatedPost has it as 0
+          const commentCount = updatedPost.commentCount || p.commentCount;
+          return { ...updatedPost, commentCount };
+        }
+        return p;
+      }));
+    } catch (err) {
+      console.error('Dislike error:', err);
+      setError('Erreur lors du dislike');
+    }
+  };
+
   // Utiliser useEffect pour recharger quand on revient à cette vue
   useEffect(() => {
     loadData();
@@ -202,7 +238,7 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
               className="custom-input mb-4"
             />
             <div className="flex gap-3">
-              <button className="px-6 py-2 bg-primary-purple-600 text-white rounded-lg hover:bg-primary-purple-700 transition-colors font-medium">Créer</button>
+              <button className="px-6 py-2 bg-secondaryOrange-500 text-white rounded-lg hover:bg-secondaryOrange-600 transition-colors font-medium">Créer</button>
               <button type="button" onClick={() => setShowCategoryForm(false)} className="px-6 py-2 bg-white border border-grey-300 text-black-500 rounded-lg hover:bg-grey-50 transition-colors">Annuler</button>
             </div>
           </form>
@@ -210,7 +246,7 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
 
         <div className="flex flex-wrap gap-2">
           {categories.map((cat, i) => (
-            <span key={cat.categoryId ?? i} className="px-4 py-1.5 bg-primary-purple-50 text-primary-purple-600 rounded-full text-sm font-medium border border-primary-purple-100">
+            <span key={cat.categoryId ?? i} className="px-4 py-1.5 bg-secondaryOrange-50 text-secondaryOrange-600 rounded-full text-sm font-medium border border-secondaryOrange-100">
               {cat.categorieName}
             </span>
           ))}
@@ -223,9 +259,9 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
           <h3 className="h5-bold text-black-500">Discussions</h3>
           <button
             onClick={() => setShowPostForm(v => !v)}
-            className="flex items-center gap-2 bg-primary-purple-600 text-black-300 px-6 py-2.5 rounded-lg hover:bg-primary-purple-700 transition-all shadow-sm hover:shadow-md font-medium "
+            className="flex items-center gap-2 bg-secondaryOrange-500 text-white px-6 py-2.5 rounded-lg hover:bg-secondaryOrange-600 transition-all shadow-sm hover:shadow-md font-medium "
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5 text-white" />
             Commencer une discussion
           </button>
         </div>
@@ -262,7 +298,7 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
             </div>
 
             <div className="flex gap-4">
-              <button className="px-8 py-2.5 bg-primary-purple-600 text-white rounded-lg hover:bg-primary-purple-700 transition-colors font-semibold shadow-sm">Publier</button>
+              <button className="px-8 py-2.5 bg-secondaryOrange-500 text-white rounded-lg hover:bg-secondaryOrange-600 transition-colors font-semibold shadow-sm">Publier</button>
               <button type="button" onClick={() => setShowPostForm(false)} className="px-8 py-2.5 bg-white border border-grey-300 text-black-500 rounded-lg hover:bg-grey-50 transition-colors font-medium">Annuler</button>
             </div>
           </form>
@@ -270,7 +306,13 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
 
         <div className="grid gap-4">
           {posts.map((post, i) => (
-            <PostCard key={post.postId ?? i} post={post} onClick={() => onPostClick(post)} />
+            <PostCard
+              key={post.postId ?? i}
+              post={post}
+              onClick={() => onPostClick(post)}
+              onLike={handleLike}
+              onDislike={handleDislike}
+            />
           ))}
           {posts.length === 0 && (
             <div className="text-center py-12 bg-grey-50 rounded-xl border border-dashed border-grey-300">

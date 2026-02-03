@@ -88,7 +88,7 @@ export default function AdminView({ groups, onBack, onUpdate }: AdminViewProps) 
                     </button>
                     <button
                       onClick={() => handleReject(group.groupId)}
-                      className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 flex items-center gap-2 font-medium transition-colors"
+                      className="px-4 py-2 bg-secondaryOrange-500 text-white rounded-lg hover:bg-secondaryOrange-600 flex items-center gap-2 font-medium transition-colors"
                       title="Rejeter le forum"
                     >
                       <X className="w-4 h-4" />
