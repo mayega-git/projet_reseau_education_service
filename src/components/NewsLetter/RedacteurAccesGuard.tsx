@@ -16,6 +16,8 @@ const normalizeStatus = (status?: string | null): RedacteurRequestStatus | null 
   return null;
 };
 
+const NEWSLETTER_SUBSCRIBE_PATH = '/newsletter/inscription';
+
 const RedacteurAccessGuard = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const { user } = useAuth();
@@ -25,24 +27,25 @@ const RedacteurAccessGuard = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkAccess = async () => {
       const storedEmail = localStorage.getItem('newsletterRedacteurEmail') || '';
-      const email = user?.sub || storedEmail;
+      const derivedEmail =
+        user?.sub && user.sub.includes('@') ? user.sub : storedEmail;
 
-      if (!email) {
+      if (!derivedEmail) {
         router.replace('/newsletter/redacteur');
         return;
       }
 
-      const result = await fetchRedacteurByEmail(email);
+      const result = await fetchRedacteurByEmail(derivedEmail);
       const status = normalizeStatus(result?.status);
 
       if (status === 'APPROVED') {
         if (result?.id) {
           localStorage.setItem('newsletterRedacteurId', result.id);
         }
-        localStorage.setItem('newsletterRedacteurEmail', email);
+        localStorage.setItem('newsletterRedacteurEmail', derivedEmail);
         setAllowed(true);
       } else {
-        router.replace('/newsletter/redacteur');
+        router.replace(NEWSLETTER_SUBSCRIBE_PATH);
       }
     };
 

@@ -21,6 +21,7 @@ import type {
 const REDACTEUR_EMAIL_KEY = 'newsletterRedacteurEmail';
 const REDACTEUR_REQUEST_ID_KEY = 'newsletterRedacteurRequestId';
 const REDACTEUR_ID_KEY = 'newsletterRedacteurId';
+const NEWSLETTER_SUBSCRIBE_PATH = '/newsletter/inscription';
 
 type Step = 'lookup' | 'register' | 'status';
 
@@ -28,6 +29,12 @@ const statusLabel: Record<RedacteurRequestStatus, string> = {
   PENDING: 'En attente',
   APPROVED: 'Approuvee',
   REJECTED: 'Rejetee',
+};
+
+const isApprovedStatus = (status?: string | null) => {
+  if (!status) return false;
+  const normalized = status.toUpperCase();
+  return normalized === 'APPROVED' || normalized === 'APPROUVED';
 };
 
 const RedacteurAccessPage = () => {
@@ -45,10 +52,17 @@ const RedacteurAccessPage = () => {
 
   useEffect(() => {
     const storedRedacteurId = localStorage.getItem(REDACTEUR_ID_KEY) || '';
-    if (storedRedacteurId) {
+    const storedEmail = localStorage.getItem(REDACTEUR_EMAIL_KEY) || '';
+    const derivedEmail =
+      storedEmail || (user?.sub && user.sub.includes('@') ? user.sub : '');
+
+    if (storedRedacteurId && derivedEmail) {
+      if (!storedEmail) {
+        localStorage.setItem(REDACTEUR_EMAIL_KEY, derivedEmail);
+      }
       setRedacteurSessionId(storedRedacteurId);
     }
-  }, []);
+  }, [user?.sub]);
 
   useEffect(() => {
     if (redacteurSessionId) {
@@ -88,12 +102,20 @@ const RedacteurAccessPage = () => {
       setRequest(result);
       setStep('status');
 
-      if (result.status === 'APPROVED') {
+      if (isApprovedStatus(result.status)) {
         localStorage.setItem(REDACTEUR_ID_KEY, result.id || requestId);
+        const resolvedEmail =
+          result.email || email || localStorage.getItem(REDACTEUR_EMAIL_KEY) || '';
+        if (resolvedEmail) {
+          localStorage.setItem(REDACTEUR_EMAIL_KEY, resolvedEmail);
+        }
         router.push('/u/newsletter');
+        return;
       }
+
+      router.replace(NEWSLETTER_SUBSCRIBE_PATH);
     },
-    [router]
+    [email, router]
   );
 
   useEffect(() => {
@@ -107,16 +129,14 @@ const RedacteurAccessPage = () => {
     const emailToCheck = storedEmail || user?.sub || '';
     if (emailToCheck) {
       fetchRedacteurByEmail(emailToCheck).then((result) => {
-        const status = result?.status?.toUpperCase();
-        if (status === 'APPROUVED' || status === 'APPROVED') {
+        if (isApprovedStatus(result?.status)) {
           localStorage.setItem(REDACTEUR_ID_KEY, result?.id || '');
           localStorage.setItem(REDACTEUR_EMAIL_KEY, emailToCheck);
           router.replace('/u/newsletter');
           return;
         }
         if (result?.status) {
-          setRequest(result);
-          setStep('status');
+          router.replace(NEWSLETTER_SUBSCRIBE_PATH);
         }
       });
     }
@@ -133,16 +153,14 @@ const RedacteurAccessPage = () => {
     }
 
     const existing = await fetchRedacteurByEmail(email.trim());
-    const existingStatus = existing?.status?.toUpperCase();
-    if (existingStatus === 'APPROUVED' || existingStatus === 'APPROVED') {
+    if (isApprovedStatus(existing?.status)) {
       localStorage.setItem(REDACTEUR_ID_KEY, existing?.id || '');
       localStorage.setItem(REDACTEUR_EMAIL_KEY, email.trim());
       router.replace('/u/newsletter');
       return;
     }
     if (existing?.status) {
-      setRequest(existing);
-      setStep('status');
+      router.replace(NEWSLETTER_SUBSCRIBE_PATH);
       return;
     }
 
@@ -186,12 +204,14 @@ const RedacteurAccessPage = () => {
     setRequest(result);
     setStep('status');
 
-    if (result.status === 'APPROVED') {
+    if (isApprovedStatus(result.status)) {
       localStorage.setItem(REDACTEUR_ID_KEY, result.id);
+      localStorage.setItem(REDACTEUR_EMAIL_KEY, email);
       router.push('/u/newsletter');
       return;
     }
 
+    router.replace(NEWSLETTER_SUBSCRIBE_PATH);
     GlobalNotifier('Demande envoyee. Nous revenons vers toi.', 'success');
   };
 
