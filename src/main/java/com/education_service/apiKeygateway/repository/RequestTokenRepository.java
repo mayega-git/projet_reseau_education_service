@@ -20,7 +20,7 @@ public interface RequestTokenRepository extends R2dbcRepository<RequestToken, UU
     @Query("SELECT * FROM request_token WHERE status_request_token = :status")
     Flux<RequestToken> findByStatus(String status);
 
-    @Query("SELECT * FROM api_key_gateway.request_token")
+    @Query("SELECT * FROM request_token")
     Flux<RequestToken> findAll();
 
     @Query("""

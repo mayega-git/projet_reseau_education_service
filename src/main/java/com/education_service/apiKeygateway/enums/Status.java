@@ -6,7 +6,8 @@ public enum Status {
     INACTIVE("INACTIVE"),
     PENDING("PENDING"),
     AUTHORIZE("AUTHORIZE"),
-    REJECTED("REJECTED");
+    REJECT("REJECTED"),
+    VALIDATE("VALIDATED");
 
     private final String value;
 

@@ -3,8 +3,9 @@ package com.education_service.apiKeygateway.enums;
 public enum Module {
 
     EDUCATION("EDUCATION"),
-    REVIEW("REVIEW"),
-    NEWSLETTER("NEWSLETTER");
+    RATINGS("RATINGS"),
+    NEWSLETTER("NEWSLETTER"),
+    FORUM("FORUM");
 
     private  final String  value;
 

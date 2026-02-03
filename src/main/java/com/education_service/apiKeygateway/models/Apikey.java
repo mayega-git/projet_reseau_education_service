@@ -12,7 +12,7 @@ import com.education_service.apiKeygateway.enums.Status;
 import lombok.Data;
 
 @Data
-@Table(name="api_key",schema = "api_key_gateway")
+@Table(name="api_key")
 public class Apikey {
 
     @Id
@@ -21,11 +21,7 @@ public class Apikey {
     @Column("refresh_token")
     private String refreshToken;
 
-    @Column("refresh_token_created_at")
-    private LocalDateTime refreshTokenCreatedAt;
 
-    @Column("refresh_token_expired_at")
-    private LocalDateTime refreshTokenExpiredAt;
 
     @Column("hash_key")
     private String apiKey;

@@ -14,22 +14,15 @@ public class HeaderExtract {
     private final ConversionService conversionService;
 
     
-    public <T> Mono<T> extractHeader(
-            ServerHttpRequest request,
-            String headerName,
-            Class<T> targetType
-    ) {
-        return Mono.justOrEmpty(request.getHeaders().getFirst(headerName))
-                .switchIfEmpty(Mono.error(
-                    new IllegalArgumentException("Header manquant : " + headerName)                ))
-                .map(value -> {
-                    if (!conversionService.canConvert(String.class, targetType)) {
-                        throw new IllegalStateException(
-                                "Conversion impossible String -> " + targetType.getSimpleName()
-                        );
-                    }
-                    return conversionService.convert(value, targetType);
-                });
-    }
+   public <T> Mono<T> extractHeader(
+        ServerHttpRequest request,
+        String headerName,
+        Class<T> targetType
+        ) {
+            return Mono.justOrEmpty(request.getHeaders().getFirst(headerName))
+                    .filter(value -> conversionService.canConvert(String.class, targetType))
+                    .map(value -> conversionService.convert(value, targetType));
+        }
+
 }
 

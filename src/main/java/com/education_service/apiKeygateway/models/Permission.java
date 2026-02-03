@@ -13,7 +13,7 @@ import lombok.Data;
 
 
 @Data
-@Table(name="permission",schema = "api_key_gateway")
+@Table(name="permission")
 public class Permission {
 
     @Id

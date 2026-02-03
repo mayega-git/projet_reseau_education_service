@@ -38,8 +38,8 @@
         
         .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .status-pending { background-color: #fff3cd; color: #856404; }
-        .status-active { background-color: #91fdaa; color: #155724; }
-        .status-rejected { background-color: #ff6b77; color: #721c24; }
+        .status-validate { background-color: #91fdaa; color: #155724; }
+        .status-reject { background-color: #ff6b77; color: #721c24; }
         
         /* Dropdown Logic */
         .dropdown { position: relative; display: inline-block; }
@@ -83,8 +83,8 @@
         <div class="filters">
             <button class="filter-btn active" onclick="filterTable('ALL', this)">Tous</button>
             <button class="filter-btn" onclick="filterTable('PENDING', this)">En attente</button>
-            <button class="filter-btn" onclick="filterTable('ACTIVE', this)">Validés</button>
-            <button class="filter-btn" onclick="filterTable('REJECTED', this)">Rejetés</button>
+            <button class="filter-btn" onclick="filterTable('VALIDATED', this)">Validés</button>
+            <button class="filter-btn" onclick="filterTable('REJECT', this)">Rejetés</button>
         </div>
 
         <div class="table-container">
@@ -113,10 +113,10 @@
                             <div class="dropdown" th:if="${#strings.toString(request.statusRequestToken) == 'PENDING'}">
                                 <button class="dropdown-toggle" onclick="toggleMenu(this)">⋮</button>
                                 <div class="dropdown-menu">
-                                    <form th:action="@{/admin/request/validate/{id}/{status}(id=${request.id}, status='ACTIVE')}" method="post">
+                                    <form th:action="@{/admin/request/validate/{id}(id=${request.id})}" method="post">
                                         <button type="submit" class="dropdown-item validate">✓ Valider</button>
                                     </form>
-                                    <form th:action="@{/admin/request/validate/{id}/{status}(id=${request.id}, status='REJECTED')}" method="post">
+                                    <form th:action="@{/admin/request/reject/{id} (id=${request.id})}" method="post">
                                         <button type="submit" class="dropdown-item reject">✕ Rejeter</button>
                                     </form>
                                 </div>

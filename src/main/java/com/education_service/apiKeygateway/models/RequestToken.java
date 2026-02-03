@@ -21,8 +21,7 @@ public class RequestToken {
     @Column("client_name")
     private String clientName;
 
-    @Column("client_id")
-    private UUID clientId;
+  
 
     @Column("email")
     private String email;

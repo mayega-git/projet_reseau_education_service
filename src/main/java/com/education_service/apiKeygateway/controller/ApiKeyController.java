@@ -23,6 +23,7 @@ import org.springframework.web.server.WebSession;
 import com.education_service.apiKeygateway.enums.Module;
 import com.education_service.apiKeygateway.dto.RequestTokenDto;
 import com.education_service.apiKeygateway.enums.Scope;
+import com.education_service.apiKeygateway.enums.Status;
 import com.education_service.apiKeygateway.service.RequestTokenService;
 import com.education_service.apiKeygateway.utils.AlertMessage;
 import jakarta.validation.Valid;
@@ -31,48 +32,55 @@ import reactor.core.publisher.Mono;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/")
+@RequestMapping
 public class ApiKeyController {
 
     private final ApiKeyRestController apiKeyRestController;
 
     private final RequestTokenService requestTokenService;
 
-    
-    
-
-
     @GetMapping("/admin")
-        public Mono<String> showAdminPage(
-            @RequestParam(required = false, defaultValue = "PENDING") String status,
+    public Mono<String> showAdminPage(
+            @RequestParam(name="status" ,required = false, defaultValue = "PENDING") String status,
             Model model) {
-        
-            return requestTokenService.findAll()
+        System.out.println("/admin page");
+        return requestTokenService.findAll()
                 .collectList()
                 .map(requests -> {
                     model.addAttribute("requests", requests);
                     model.addAttribute("currentStatus", status);
                     return "adminValidation";
                 });
-        }
-    
-    @PostMapping("/admin/request/update/{id}/{status}")
-        public Mono<String> updateRequestStatus(Model model,
-            @PathVariable String id,
-            @PathVariable String status) {
-            
-        
-
-            return requestTokenService
-            .updateRequestStatus(UUID.fromString(id), status)
-            .thenReturn("redirect:/admin?msg=success")
-            .onErrorResume(e -> {
-                System.err.println("❌ Erreur updateRequestStatus: " + e.getMessage());
-                return Mono.just("redirect:/admin?msg=error");
-            });
     }
 
-   @GetMapping("/request")
+    @PostMapping("/admin/request/validate/{id}")
+    public Mono<String> updateRequestStatusValidate(Model model,
+            @PathVariable("id") String id) {
+
+        return requestTokenService
+                .updateRequestStatusValidate(UUID.fromString(id), Status.VALIDATE)
+                .thenReturn("redirect:/admin?msg=success")
+                .onErrorResume(e -> {
+                    System.err.println("❌ Erreur updateRequestStatus: " + e.getMessage());
+                    return Mono.just("redirect:/admin?msg=error");
+                });
+    }
+
+    @PostMapping("/admin/request/reject/{id}")
+    public Mono<String> updateRequestStatusReject(Model model,
+            @PathVariable("id") String id) {
+
+        return requestTokenService
+                .updateRequestStatusReject(UUID.fromString(id), Status.REJECT)
+                .thenReturn("redirect:/admin?msg=success")
+                .onErrorResume(e -> {
+                    e.printStackTrace();
+                    System.err.println(" Erreur updateRequestStatus: " + e.getMessage());
+                    return Mono.just("redirect:/admin?msg=error");
+                });
+    }
+
+    @GetMapping("/request")
     public String showRequestForm(Model model, WebSession session) {
 
         if (!model.containsAttribute("requestTokenDto")) {
@@ -89,73 +97,63 @@ public class ApiKeyController {
         return "requestToken";
     }
 
-
-
     @PostMapping("/request")
     public Mono<String> submitRequest(
-        @Valid @ModelAttribute RequestTokenDto dto,
-        BindingResult bindingResult,
-        ServerWebExchange exchange) {
+            @Valid @ModelAttribute RequestTokenDto dto,
+            BindingResult bindingResult,
+            ServerWebExchange exchange) {
 
         return exchange.getSession().flatMap(session -> {
 
             if (bindingResult.hasErrors()) {
                 session.getAttributes().put(
-                    "message",
-                    new AlertMessage("error", "Veuillez corriger les erreurs du formulaire")
-                );
+                        "message",
+                        new AlertMessage("error", "Veuillez corriger les erreurs du formulaire"));
                 return Mono.just("redirect:/request");
             }
 
-            // ⚠️ Construction contrôlée des modules/scopes
+            // Construction contrôlée des modules/scopes
             return exchange.getFormData()
-                .flatMap(formData -> {
+                    .flatMap(formData -> {
 
-                    Map<Module, Scope> serviceNames = buildServiceNamesMap(formData);
+                        Map<Module, Scope> serviceNames = buildServiceNamesMap(formData);
 
-                    if (serviceNames.isEmpty()) {
-                        session.getAttributes().put(
-                            "message",
-                            new AlertMessage("error", "Vous devez sélectionner au moins un module")
-                        );
-                        return Mono.just("redirect:/request");
-                    }
-
-                    dto.setServiceNames(serviceNames);
-
-                    return requestTokenService.saveRequestToken(dto)
-                        .map(savedToken -> {
+                        if (serviceNames.isEmpty()) {
                             session.getAttributes().put(
-                                "message",
-                                new AlertMessage(
-                                    "success",
-                                    "Requête enregistrée avec succès"
-                                )
-                            );
-                            return "redirect:/request";
-                        })
-                        .onErrorResume(ex -> {
-                            session.getAttributes().put(
-                                "message",
-                                new AlertMessage(
-                                    "error",
-                                    "Échec de l'enregistrement : " + ex.getMessage()
-                                )
-                            );
+                                    "message",
+                                    new AlertMessage("error", "Vous devez sélectionner au moins un module"));
                             return Mono.just("redirect:/request");
-                        });
+                        }
 
-                })
-                .onErrorResume(e -> {
-                    session.getAttributes().put(
-                        "message",
-                        new AlertMessage("error", "Erreur système : " + e.getMessage())
-                    );
-                    return Mono.just("redirect:/request");
-                });
+                        dto.setServiceNames(serviceNames);
+
+                        return requestTokenService.saveRequestToken(dto)
+                                .map(savedToken -> {
+                                    session.getAttributes().put(
+                                            "message",
+                                            new AlertMessage(
+                                                    "success",
+                                                    "Requête enregistrée avec succès"));
+                                    return "redirect:/request";
+                                })
+                                .onErrorResume(ex -> {
+                                    session.getAttributes().put(
+                                            "message",
+                                            new AlertMessage(
+                                                    "error",
+                                                    "Échec de l'enregistrement : " + ex.getMessage()));
+                                    return Mono.just("redirect:/request");
+                                });
+
+                    })
+                    .onErrorResume(e -> {
+                        session.getAttributes().put(
+                                "message",
+                                new AlertMessage("error", "Erreur système : " + e.getMessage()));
+                        return Mono.just("redirect:/request");
+                    });
         });
-   }
-
+    }
 
     private Map<Module, Scope> buildServiceNamesMap(MultiValueMap<String, String> formData) {
 
@@ -175,6 +173,6 @@ public class ApiKeyController {
         });
 
         return result;
-  } 
+    }
 
 }
