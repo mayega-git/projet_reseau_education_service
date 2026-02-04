@@ -38,10 +38,15 @@ public class RedacteurController {
      * GET /api/redacteurs/request/{id}
      */
     @GetMapping("/request/{id}")
-    public Mono<RedacteurRequestResponse> getRequestStatus(@PathVariable String id) {
+    public Mono<RedacteurRequestResponse> getRequestStatus(@PathVariable("id") String id) {
         
         log.info(" Consultation statut demande: {}", id);
         
         return approvalService.getRequestById(java.util.UUID.fromString(id));
+    }
+
+    @GetMapping("/email")
+    public Mono<Boolean> checkEmailExists(@RequestParam(name = "email") String email) {
+        return approvalService.emailExists(email);
     }
 }

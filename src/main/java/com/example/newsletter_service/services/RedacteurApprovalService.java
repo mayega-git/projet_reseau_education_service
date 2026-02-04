@@ -204,4 +204,9 @@ public class RedacteurApprovalService {
             .rejectionReason(redacteur.getRejectionReason())
             .build();
     }
+
+    public Mono<Boolean> emailExists(String email) {
+        log.debug("Vérification de l'existence de l'email : {}", email);
+        return redacteurRepository.existsByEmail(email);
+    }
 }

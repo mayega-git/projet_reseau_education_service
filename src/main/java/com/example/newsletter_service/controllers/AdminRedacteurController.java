@@ -71,7 +71,7 @@ public class AdminRedacteurController {
      * GET /api/admin/redacteurs/requests/{id}
      */
     @GetMapping("/requests/{id}")
-    public Mono<RedacteurRequestResponse> getRequest(@PathVariable UUID id) {
+    public Mono<RedacteurRequestResponse> getRequest(@PathVariable("id") UUID id) {
         log.info("🔍 Admin - Consultation demande: {}", id);
 
         return approvalService.getRequestById(id);
@@ -84,7 +84,7 @@ public class AdminRedacteurController {
     @PostMapping("/requests/{id}/approve")
     @ResponseStatus(HttpStatus.OK)
     public Mono<RedacteurRequestResponse> approveRequest(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Valid @RequestBody ApprovalRequest request) {
 
         log.info(" Admin {} - Approbation demande: {}", id);
@@ -99,7 +99,7 @@ public class AdminRedacteurController {
     @PostMapping("/requests/{id}/reject")
     @ResponseStatus(HttpStatus.OK)
     public Mono<RedacteurRequestResponse> rejectRequest(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Valid @RequestBody RejectionRequest request) {
 
         log.info(" Admin {} - Rejet demande: {}", id);
