@@ -232,6 +232,7 @@ components:
 # LOGGING
 # ========================================
 logging:
+  file.name: ${LOG_FILE:app.log}
   level:
     #root: DEBUG
     com.education.apigateway: DEBUG
