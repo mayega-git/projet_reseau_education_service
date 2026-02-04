@@ -33,7 +33,7 @@ import java.util.UUID;
 
 @RestController
 @CrossOrigin(originPatterns = "*")
-@RequestMapping("/education/podcasts")
+@RequestMapping("/education-service/education/podcasts")
 public class PodcastController {
 
     private final PodcastService podcastService;
@@ -149,7 +149,7 @@ public class PodcastController {
             @ApiResponse(responseCode = "200", description = "Succès"),
             @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
     })
-    public Mono<ResponseEntity<Podcast_entity>> getPodcastById(@PathVariable String id) {
+    public Mono<ResponseEntity<Podcast_entity>> getPodcastById(@PathVariable("id") String id) {
         return podcastService.getPodcastById(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -161,7 +161,7 @@ public class PodcastController {
             @ApiResponse(responseCode = "200", description = "Podcast publié"),
             @ApiResponse(responseCode = "404", description = "Podcast non trouvé")
     })
-    public Mono<ResponseEntity<Podcast_entity>> publishBlog(@PathVariable String id) {
+    public Mono<ResponseEntity<Podcast_entity>> publishBlog(@PathVariable("id") String id) {
         return podcastService.publishPodcast(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -185,7 +185,7 @@ public class PodcastController {
     }
 
     @GetMapping("/{idPodcast}/coverpodcast")
-    public Mono<ResponseEntity<Flux<DataBuffer>>> cover(@PathVariable UUID idPodcast) {
+    public Mono<ResponseEntity<Flux<DataBuffer>>> cover(@PathVariable("idPodcast") UUID idPodcast) {
         System.out.println("=====PODCAST SERVICE - GET COVER IMAGE ========");
 
         return podcastService.getCoverImage(idPodcast)
@@ -196,7 +196,7 @@ public class PodcastController {
     }
 
     @GetMapping("/{idPodcast}/audiopodcast")
-    public Mono<ResponseEntity<Flux<DataBuffer>>> audio(@PathVariable UUID idPodcast) {
+    public Mono<ResponseEntity<Flux<DataBuffer>>> audio(@PathVariable("idPodcast") UUID idPodcast) {
         System.out.println("=====PODCAST SERVICE - GET AUDIO IMAGE =======");
 
         return podcastService.getAudioPodcast(idPodcast)
