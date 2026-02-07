@@ -3,3 +3,5 @@ docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sqls
 
 # Se connecter (remplacez 172.17.0.2 par l'IP réelle)
 sqlcmd -S 172.17.0.2 -U SA -P "Rootp@ss123!" -d userdb
+
+
