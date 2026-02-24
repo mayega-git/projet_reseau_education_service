@@ -1,6 +1,5 @@
 package com.letsgo.user_service.user_service.model;
 
-
 import com.letsgo.user_service.user_service.model.enums.RoleEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -34,9 +33,8 @@ public class User {
     @Column(name = "firstName", nullable = false)
     private String firstName;
 
-    @Column (name = "lastName" , nullable = false)
+    @Column(name = "lastName", nullable = false)
     private String lastName;
-
 
     @Column(name = "password", nullable = false)
     private String password;
@@ -45,12 +43,12 @@ public class User {
     private String bio;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_organisation", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "organisation_id"))
+    private Set<Organisation> organisations = new HashSet<>();
 
     @CreationTimestamp
     @Column(name = "createdAt", nullable = false)
@@ -132,7 +130,16 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    public User(UUID id, String firstName, String lastName, String email, String password, String bio, Set<Role> roles, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Set<Organisation> getOrganisations() {
+        return organisations;
+    }
+
+    public void setOrganisations(Set<Organisation> organisations) {
+        this.organisations = organisations;
+    }
+
+    public User(UUID id, String firstName, String lastName, String email, String password, String bio, Set<Role> roles,
+            LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;

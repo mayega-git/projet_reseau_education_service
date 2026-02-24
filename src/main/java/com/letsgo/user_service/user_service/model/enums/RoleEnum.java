@@ -6,4 +6,6 @@ public enum RoleEnum {
     ADMIN,
     SUPER_ADMIN,
     AUTHOR,
+    ORGANISATION,
+    PENDING_ORGANISATION
 }

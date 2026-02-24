@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -22,7 +23,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/roles")public class RoleController {
+@RequestMapping("/api/roles")
+public class RoleController {
 
     @Autowired
     private RoleService roleService;
@@ -116,11 +118,12 @@ import java.util.stream.Collectors;
                         existingUser.getFirstName(),
                         existingUser.getLastName(),
                         roleEnums,
-                        token
-                );
+                        token,
+                        Collections.emptyList());
 
                 // Return the success response
-                return ResponseEntity.ok(new DefaultResponse<>(200, "User role upgraded successfully", userResponseWithToken));
+                return ResponseEntity
+                        .ok(new DefaultResponse<>(200, "User role upgraded successfully", userResponseWithToken));
 
             } else {
                 // User not found
@@ -135,7 +138,6 @@ import java.util.stream.Collectors;
             return ResponseEntity.status(500).body(new DefaultResponse<>(500, "An error occurred", null));
         }
     }
-
 
     @Operation(description = "Remove a role from a user")
     @ApiResponse(responseCode = "200", description = "Role successfully removed from the user")
@@ -175,11 +177,12 @@ import java.util.stream.Collectors;
                         existingUser.getFirstName(),
                         existingUser.getLastName(),
                         roleEnums,
-                        token
-                );
+                        token,
+                        Collections.emptyList());
 
                 // Return the success response with the updated user information and token
-                return ResponseEntity.ok(new DefaultResponse<>(200, "User role removed successfully", userResponseWithToken));
+                return ResponseEntity
+                        .ok(new DefaultResponse<>(200, "User role removed successfully", userResponseWithToken));
             } else {
                 // User not found
                 return ResponseEntity.status(404).body(new DefaultResponse<>(404, "User not found", null));
@@ -194,6 +197,3 @@ import java.util.stream.Collectors;
     }
 
 }
-
-
-
