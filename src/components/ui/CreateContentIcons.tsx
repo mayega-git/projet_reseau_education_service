@@ -10,7 +10,7 @@ export const CreateContentIcons = () => {
           href="/blog/create"
         >
           <SquarePen size={24} />
-          Write
+          Blog
         </Link>
       </div>
       
@@ -21,7 +21,7 @@ export const CreateContentIcons = () => {
         >
           {' '}
           <Mic size={24} />
-          Upload
+          Podcast
         </Link>
       </div>
     </div>

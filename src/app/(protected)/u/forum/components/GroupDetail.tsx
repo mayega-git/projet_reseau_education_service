@@ -13,7 +13,7 @@ import type { DiscussionGroup, Category, Post } from '@/types/forum';
 import LoadingSpinner from '@/app/(protected)/u/forum/components/LoadingSpinner';
 
 import { api } from '@/lib/FetchFromForum';
-//import { API_BASE_URL } from "@/types/constants";
+import { fetchUsersByIds } from '@/lib/FetchDataFromUserService';
 
 import { User, GetUser, GetRoles } from '@/types/User';
 
@@ -60,6 +60,29 @@ export default function GroupDetail({ group, onPostClick, onBack }: GroupDetailP
         api.getPostsByGroup(groupId)
       ]);
       setCategories(categoriesData ?? []);
+
+      // Optimization: Fetch all missing author names at once
+      if (postsData && postsData.length > 0) {
+        const missingAuthorIds = Array.from(new Set(
+          postsData
+            .filter(p => !p.authorName || p.authorName === 'Utilisateur')
+            .map(p => p.authorId)
+            .filter(Boolean)
+        ));
+
+        if (missingAuthorIds.length > 0) {
+          const usersMap = await fetchUsersByIds(missingAuthorIds);
+          postsData.forEach(p => {
+            if (!p.authorName || p.authorName === 'Utilisateur') {
+              const userData = usersMap[p.authorId];
+              if (userData) {
+                p.authorName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Utilisateur';
+              }
+            }
+          });
+        }
+      }
+
       setPosts(postsData ?? []);
     } catch (e) {
       console.error(e);

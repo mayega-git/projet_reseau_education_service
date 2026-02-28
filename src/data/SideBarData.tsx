@@ -69,6 +69,20 @@ export const SideBarData = [
     subnav: [],
   },
   {
+    title: 'Blog',
+    url: '/blog/create',
+    role: [AppRoles.AUTHOR, AppRoles.SUPER_ADMIN, AppRoles.ADMIN],
+    icon: PencilLine,
+    subnav: [],
+  },
+  {
+    title: 'Podcast',
+    url: '/podcast/create',
+    role: [AppRoles.AUTHOR, AppRoles.SUPER_ADMIN, AppRoles.ADMIN],
+    icon: Mic,
+    subnav: [],
+  },
+  {
     title: 'Favorites',
     url: `/u/favorites/blog`,
     role: [

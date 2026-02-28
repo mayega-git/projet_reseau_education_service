@@ -7,6 +7,7 @@ import CommentTree from './CommentTree';
 import LoadingSpinner from './LoadingSpinner';
 import type { Post, Comment } from '@/types/forum';
 import { api, buildCommentTree } from '@/lib/FetchFromForum';
+import { fetchUserData, fetchUsersByIds } from '@/lib/FetchDataFromUserService';
 
 interface PostDetailProps {
   post: Post;
@@ -22,6 +23,7 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
   const [isDisliking, setIsDisliking] = useState(false);
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [resolvedPostAuthorName, setResolvedPostAuthorName] = useState(post?.authorName || 'Utilisateur');
 
   const { user, token } = useAuth();
 
@@ -44,13 +46,61 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
     }
   }, [initialPost]);
 
+  useEffect(() => {
+    const fetchPostAuthorName = async () => {
+      if (!post) return;
 
+      if (post.authorName && post.authorName !== 'Utilisateur') {
+        setResolvedPostAuthorName(post.authorName);
+        return;
+      }
+
+      if (post.authorId === user?.id && user?.firstName) {
+        setResolvedPostAuthorName(`${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`);
+        return;
+      }
+
+      if (post.authorId) {
+        try {
+          const userData = await fetchUserData(post.authorId);
+          if (userData && (userData.firstName || userData.lastName)) {
+            setResolvedPostAuthorName(`${userData.firstName || ''} ${userData.lastName || ''}`.trim());
+          }
+        } catch (error) {
+          console.error('Error fetching post author name:', error);
+        }
+      }
+    };
+
+    fetchPostAuthorName();
+  }, [post?.authorId, post?.authorName, user?.id, user?.firstName, user?.lastName]);
 
   const loadComments = async () => {
     if (!post?.postId) return;
     setLoading(true);
     try {
       const data = await api.getCommentsByPost(post.postId);
+
+      // Optimization: Fetch all missing author names at once
+      const missingAuthorIds = Array.from(new Set(
+        data
+          .filter(c => !c.authorName || c.authorName === 'Utilisateur')
+          .map(c => c.authorId)
+          .filter(Boolean)
+      ));
+
+      if (missingAuthorIds.length > 0) {
+        const usersMap = await fetchUsersByIds(missingAuthorIds);
+        data.forEach(c => {
+          if (!c.authorName || c.authorName === 'Utilisateur') {
+            const userData = usersMap[c.authorId];
+            if (userData) {
+              c.authorName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Utilisateur';
+            }
+          }
+        });
+      }
+
       // Construct the nested tree manually as the backend returns a flat list
       const nestedComments = buildCommentTree(data);
       setComments(nestedComments);
@@ -207,19 +257,13 @@ export default function PostDetail({ post: initialPost, onBack }: PostDetailProp
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-6 border-t border-grey-200">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-secondaryOrange-500 flex items-center justify-center text-white text-lg font-bold shadow-sm">
-              {post.authorName && post.authorName !== 'Utilisateur'
-                ? post.authorName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().substring(0, 1)
-                : (post.authorId === user?.id && user?.firstName)
-                  ? user.firstName.charAt(0).toUpperCase()
-                  : 'U'}
+              {resolvedPostAuthorName !== 'Utilisateur'
+                ? resolvedPostAuthorName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().substring(0, 1)
+                : 'U'}
             </div>
             <div>
               <p className="paragraph-medium-bold text-black-500">
-                Par {(post.authorName && post.authorName !== 'Utilisateur')
-                  ? post.authorName
-                  : (post.authorId === user?.id && user?.firstName)
-                    ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`
-                    : post.authorName || 'Utilisateur'}
+                Par {resolvedPostAuthorName}
               </p>
               <p className="paragraph-xsmall-normal text-black-300">{post.createdAt ? new Date(post.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date inconnue'}</p>
             </div>

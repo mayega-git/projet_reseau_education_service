@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Edit2, Trash2, ChevronDown, ChevronRight, Reply } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import type { Comment } from '@/types/forum';
+import { fetchUserData } from '@/lib/FetchDataFromUserService';
 
 interface CommentTreeProps {
   comments: Comment[];
@@ -30,8 +31,40 @@ function CommentItem({
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resolvedAuthorName, setResolvedAuthorName] = useState(comment.authorName || 'Utilisateur');
 
   const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchName = async () => {
+      // If we have a real name, use it
+      if (comment.authorName && comment.authorName !== 'Utilisateur') {
+        setResolvedAuthorName(comment.authorName);
+        return;
+      }
+
+      // If it's the current user, we can use local data
+      if (comment.authorId === user?.id && user?.firstName) {
+        setResolvedAuthorName(`${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`);
+        return;
+      }
+
+      // Otherwise fetch from service
+      if (comment.authorId) {
+        try {
+          const userData = await fetchUserData(comment.authorId);
+          if (userData && (userData.firstName || userData.lastName)) {
+            setResolvedAuthorName(`${userData.firstName || ''} ${userData.lastName || ''}`.trim());
+          }
+        } catch (error) {
+          console.error('Error fetching comment author name:', error);
+        }
+      }
+    };
+
+    fetchName();
+  }, [comment.authorId, comment.authorName, user?.id, user?.firstName, user?.lastName]);
+
   const commentDate = comment.createdAt || comment.creationDate;
   const hasReplies = comment.replies && comment.replies.length > 0;
 
@@ -52,12 +85,8 @@ function CommentItem({
     }
   };
 
-  // Extremely robust name logic: normalized from backend, or fallback to current user if IDs match
-  const authorDisplayName = (comment.authorName && comment.authorName !== 'Utilisateur')
-    ? comment.authorName
-    : (comment.authorId === user?.id && user?.firstName)
-      ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`
-      : comment.authorName || 'Utilisateur';
+  // Use the resolved name
+  const authorDisplayName = resolvedAuthorName;
 
   const authorInitials = authorDisplayName
     ? authorDisplayName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().substring(0, 2)

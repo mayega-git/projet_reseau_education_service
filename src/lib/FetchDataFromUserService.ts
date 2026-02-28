@@ -30,7 +30,10 @@ export const fetchAllUsers = async (
   await Promise.all(
     data.reverse().map(async (row) => {
       try {
-        const authorData = await fetchUserData(row.authorId);
+        const authorId = row.authorId;
+        if (!authorId) return;
+
+        const authorData = await fetchUserData(authorId);
 
         usersMap[row.id] = {
           id: authorData?.id || 'unknown',
@@ -55,6 +58,29 @@ export const fetchAllUsers = async (
           roles: [],
           token: null,
         };
+      }
+    })
+  );
+
+  return usersMap;
+};
+
+/**
+ * Fetch multiple users by their IDs and return a map of ID -> User
+ */
+export const fetchUsersByIds = async (userIds: string[]): Promise<{ [key: string]: GetUser }> => {
+  const uniqueIds = Array.from(new Set(userIds.filter(Boolean)));
+  const usersMap: { [key: string]: GetUser } = {};
+
+  await Promise.all(
+    uniqueIds.map(async (id) => {
+      try {
+        const userData = await fetchUserData(id);
+        if (userData) {
+          usersMap[id] = userData;
+        }
+      } catch (err) {
+        console.error(`Failed to fetch user id=${id}`, err);
       }
     })
   );
@@ -277,7 +303,7 @@ export interface UserWithBlogCount extends GetUser {
  */
 export const getAllUsers = async (): Promise<GetUser[]> => {
   const url = `${UserServiceRoutes.base}`;
-  
+
   console.log('📤 [getAllUsers] Fetching all users from:', url);
 
   try {
@@ -312,7 +338,7 @@ export const getAllUsers = async (): Promise<GetUser[]> => {
  */
 export const getUserBlogCount = async (userId: string): Promise<number> => {
   const url = `${EducationServiceRoutes.blogs}/count-by-author/${userId}`;
-  
+
   console.log('📤 [getUserBlogCount] Fetching blog count for user:', userId);
 
   try {
@@ -363,7 +389,7 @@ export const getAllUsersWithBlogCount = async (): Promise<UserWithBlogCount[]> =
  */
 export const deleteUser = async (userId: string): Promise<void> => {
   const url = `${UserServiceRoutes.base}/${userId}`;
-  
+
   console.log('📤 [deleteUser] Deleting user:', userId);
 
   try {
@@ -395,7 +421,7 @@ export const updateUserRoles = async (
   roles: string[]
 ): Promise<void> => {
   const url = `${UserServiceRoutes.role}/${userId}`;
-  
+
   console.log('📤 [updateUserRoles] Updating roles for user:', userId, roles);
 
   try {
